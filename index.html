@@ -1,0 +1,2431 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Conveyor Belt Dashboard</title>
+  <style>
+    :root {
+      --bg: #eaf8fb;
+      --panel: #d8eef9;
+      --panel-2: #b9dff1;
+      --line: #8fcddb;
+      --muted: #4f7d98;
+      --text: #123850;
+      --green: #22c56e;
+      --orange: #3b98dc;
+      --yellow: #f1b61b;
+      --red: #e64c47;
+      --purple: #2b73af;
+      --cyan: #9edee0;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: Inter, "Segoe UI", Tahoma, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(158,222,224,.46), transparent 34rem),
+        var(--bg);
+      background-size: auto;
+      letter-spacing: 0;
+    }
+
+    .dashboard {
+      width: min(1510px, 100%);
+      margin: 0 auto;
+      padding: 22px 18px 28px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid rgba(43,115,175,.18);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      min-width: 280px;
+      padding: 9px 13px;
+      border: 1px solid rgba(143,205,219,.46);
+      border-radius: 8px;
+      background: linear-gradient(135deg, rgba(216,238,249,.96), rgba(185,223,241,.9));
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.52), 0 12px 26px rgba(37,111,171,.14);
+    }
+
+    .brand-logo {
+      width: min(420px, 44vw);
+      max-height: 58px;
+      display: block;
+      object-fit: contain;
+      object-position: left center;
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,.26));
+      opacity: .98;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(19px, 2.2vw, 28px);
+      line-height: 1;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    h1 span {
+      color: var(--orange);
+      letter-spacing: .08em;
+    }
+
+    .subtitle {
+      margin-top: 7px;
+      color: #4f7d98;
+      font-size: 12px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .last-update {
+      margin-right: 8px;
+      color: #5e8aa4;
+      font-size: 10px;
+      text-align: right;
+      text-transform: uppercase;
+    }
+
+    button {
+      height: 34px;
+      border-radius: 7px;
+      padding: 0 14px;
+      color: #123850;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #72b9e4 0%, #a8d6ee 58%, #d8eef9 100%);
+      cursor: default;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.65);
+    }
+
+    .refresh {
+      border: 1px solid #3b98dc;
+      color: #205d90;
+    }
+
+    .logout {
+      border: 1px solid #5aaee2;
+      color: #205d90;
+    }
+
+    .print-button {
+      border: 1px solid #3b98dc;
+      color: #111;
+    }
+
+    .tabs,
+    .line-tabs {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .tabs {
+      margin-top: 20px;
+    }
+
+    .tab {
+      min-width: 148px;
+      height: 34px;
+      border: 1px solid #3b98dc;
+      border-radius: 7px 7px 0 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      color: #111;
+      font-size: 12px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #72b9e4 0%, #a8d6ee 58%, #d8eef9 100%);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.72), 0 8px 18px rgba(37,111,171,.08);
+    }
+
+    .tab.active {
+      color: #111;
+      border-color: #3b98dc;
+      border-bottom-color: #3b98dc;
+      box-shadow: inset 0 -3px 0 #3b98dc, 0 0 0 1px rgba(59,152,220,.12);
+    }
+
+    .tab[data-section],
+    [data-action="print"] {
+      cursor: pointer;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--green);
+      display: inline-block;
+    }
+
+    .hint {
+      margin: 5px 0 13px;
+      color: #4f7d98;
+      font-size: 10px;
+    }
+
+    .line-tabs {
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .line-tab {
+      min-width: 72px;
+      height: 35px;
+      border: 1px solid #3b98dc;
+      border-radius: 7px;
+      color: #111;
+      background: linear-gradient(135deg, #72b9e4 0%, #a8d6ee 58%, #d8eef9 100%);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.72), 0 8px 18px rgba(37,111,171,.08);
+      font-size: 11px;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    .line-tab.active {
+      color: #111;
+      border-color: var(--green);
+      box-shadow: 0 0 0 1px rgba(34,197,110,.22), inset 0 -3px 0 var(--green);
+    }
+
+    body.locked {
+      overflow: hidden;
+    }
+
+    body.locked .dashboard {
+      filter: blur(12px);
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .auth-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background:
+        radial-gradient(circle at top left, rgba(158,222,224,.7), transparent 34rem),
+        rgba(234,248,251,.96);
+    }
+
+    body.locked .auth-screen {
+      display: flex;
+    }
+
+    .auth-card {
+      width: min(420px, 100%);
+      border: 1px solid rgba(59,152,220,.32);
+      border-radius: 10px;
+      padding: 22px;
+      background: linear-gradient(135deg, rgba(216,238,249,.98), rgba(185,223,241,.96));
+      box-shadow: 0 24px 60px rgba(37,111,171,.22), inset 0 1px 0 rgba(255,255,255,.7);
+    }
+
+    .auth-card img {
+      width: min(310px, 100%);
+      max-height: 58px;
+      object-fit: contain;
+      object-position: left center;
+      display: block;
+      margin-bottom: 20px;
+    }
+
+    .auth-card h2 {
+      margin: 0 0 8px;
+      color: #123850;
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .auth-card p {
+      margin: 0 0 16px;
+      color: #4f7d98;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .auth-form {
+      display: grid;
+      gap: 10px;
+    }
+
+    .auth-form label {
+      color: #123850;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .auth-form input {
+      width: 100%;
+      height: 42px;
+      border: 1px solid rgba(59,152,220,.54);
+      border-radius: 8px;
+      padding: 0 12px;
+      color: #123850;
+      background: rgba(255,255,255,.88);
+      font-size: 15px;
+      font-weight: 700;
+      outline: none;
+    }
+
+    .auth-form input:focus {
+      border-color: #2b73af;
+      box-shadow: 0 0 0 3px rgba(59,152,220,.16);
+    }
+
+    .auth-submit {
+      width: 100%;
+      height: 42px;
+      margin-top: 4px;
+      border: 1px solid #2b73af;
+      cursor: pointer;
+    }
+
+    .auth-message {
+      min-height: 18px;
+      color: var(--red);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .data-source-status {
+      width: 100%;
+      color: #4f7d98;
+      font-size: 10px;
+      text-align: right;
+    }
+
+    .detail-page,
+    .summary-page {
+      margin-top: 20px;
+    }
+
+    body.summary-mode .detail-page,
+    body.detail-mode .summary-page {
+      display: none;
+    }
+
+    .summary-hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(280px, .7fr);
+      gap: 18px;
+      align-items: stretch;
+      margin-bottom: 18px;
+    }
+
+    .summary-title-panel {
+      border: 1px solid rgba(143,205,219,.84);
+      border-radius: 8px;
+      padding: 24px;
+      background: linear-gradient(135deg, rgba(216,238,249,.98), rgba(185,223,241,.9));
+      box-shadow: 0 14px 35px rgba(37,111,171,.14);
+    }
+
+    .summary-title-panel h2 {
+      margin: 0 0 8px;
+      color: #123850;
+      font-size: clamp(24px, 3vw, 38px);
+      line-height: 1.05;
+    }
+
+    .summary-title-panel p {
+      max-width: 780px;
+      margin: 0;
+      color: #4f7d98;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .summary-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    .summary-actions button,
+    .summary-toggle {
+      cursor: pointer;
+    }
+
+    .summary-status-panel {
+      border: 1px solid rgba(143,205,219,.84);
+      border-radius: 8px;
+      padding: 22px;
+      background: var(--panel);
+      box-shadow: 0 14px 35px rgba(37,111,171,.14);
+    }
+
+    .summary-status-label {
+      color: #4f7d98;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .summary-status-value {
+      margin-top: 8px;
+      color: var(--green);
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .summary-status-value.warn {
+      color: var(--yellow);
+    }
+
+    .summary-status-value.alarm {
+      color: var(--red);
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .summary-card {
+      min-height: 104px;
+      border: 1px solid rgba(143,205,219,.84);
+      border-radius: 8px;
+      padding: 16px;
+      background: var(--panel);
+      box-shadow: 0 10px 25px rgba(37,111,171,.12);
+    }
+
+    .summary-card strong {
+      display: block;
+      color: #123850;
+      font-size: clamp(22px, 2.8vw, 34px);
+      line-height: 1;
+    }
+
+    .summary-card span {
+      display: block;
+      margin-top: 9px;
+      color: #4f7d98;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .summary-panels {
+      display: grid;
+      grid-template-columns: minmax(0, .9fr) minmax(0, 1.05fr) minmax(0, .95fr);
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .summary-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .risk-item {
+      display: grid;
+      grid-template-columns: minmax(70px, .4fr) minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      border: 1px solid rgba(143,205,219,.62);
+      border-radius: 7px;
+      padding: 10px 12px;
+      background: rgba(255,255,255,.58);
+      color: #123850;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .risk-item .pill {
+      min-width: 72px;
+      text-align: center;
+    }
+
+    .summary-table,
+    .equipment-summary-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 12px;
+    }
+
+    .summary-table th,
+    .summary-table td,
+    .equipment-summary-table th,
+    .equipment-summary-table td {
+      border-bottom: 1px solid rgba(143,205,219,.54);
+      padding: 9px 8px;
+      color: #123850;
+      text-align: left;
+    }
+
+    .summary-table th,
+    .equipment-summary-table th {
+      color: #4f7d98;
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 980px) {
+      .summary-hero,
+      .summary-panels {
+        grid-template-columns: 1fr;
+      }
+
+      .summary-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      .summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .summary-title-panel,
+      .summary-status-panel {
+        padding: 18px;
+      }
+
+      .risk-item {
+        grid-template-columns: 1fr;
+      }
+
+      .summary-table,
+      .equipment-summary-table {
+        min-width: 620px;
+      }
+
+      .summary-panels .panel {
+        overflow-x: auto;
+      }
+    }
+
+    .line-tab:nth-child(3n) .status-dot {
+      background: var(--orange);
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 26px;
+    }
+
+    .metric {
+      min-height: 116px;
+      border: 1px solid rgba(143,205,219,.84);
+      border-top-color: rgba(34,197,110,.85);
+      border-radius: 8px;
+      padding: 23px 21px;
+      background: var(--panel);
+      box-shadow: 0 14px 35px rgba(37,111,171,.16);
+    }
+
+    .metric:nth-child(2) {
+      border-top-color: rgba(59,152,220,.88);
+    }
+
+    .metric:nth-child(3) {
+      border-top-color: rgba(241,182,27,.86);
+    }
+
+    .metric:nth-child(4) {
+      border-top-color: rgba(230,76,71,.86);
+    }
+
+    .metric-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 9px;
+    }
+
+    .metric-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+      color: #123850;
+      background: #b9dff1;
+    }
+
+    .metric-value {
+      font-size: 25px;
+      font-weight: 900;
+      color: var(--green);
+      line-height: 1;
+    }
+
+    .metric:nth-child(2) .metric-value {
+      color: var(--orange);
+    }
+
+    .metric:nth-child(3) .metric-value {
+      color: var(--yellow);
+    }
+
+    .metric:nth-child(4) .metric-value {
+      color: var(--red);
+    }
+
+    .metric-label {
+      color: #4f7d98;
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    .section-title {
+      margin: 0 0 12px;
+      color: #756947;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    .panel {
+      border: 1px solid rgba(143,205,219,.84);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: 0 16px 42px rgba(37,111,171,.18);
+    }
+
+    .belt-panel {
+      padding: 20px 24px 18px;
+    }
+
+    .panel-title {
+      margin: 0 0 78px;
+      text-align: center;
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .belt-wrap {
+      position: relative;
+      height: 192px;
+      margin: 0 20px 18px;
+    }
+
+    .belt-track {
+      position: absolute;
+      left: 84px;
+      right: 84px;
+      top: 38px;
+      height: 48px;
+      border: 6px solid #000;
+      border-left: 0;
+      border-right: 0;
+      background: rgba(216,238,249,.66);
+    }
+
+    .belt-arrow {
+      position: absolute;
+      width: 178px;
+      height: 28px;
+      z-index: 4;
+      pointer-events: none;
+      opacity: .96;
+      filter: drop-shadow(0 0 8px rgba(37,111,171,.36));
+    }
+
+    .belt-arrow::before {
+      content: "";
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      right: 14px;
+      height: 4px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(37,111,171,.35), #256fab, #3b98dc);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.42), 0 0 10px rgba(37,111,171,.24);
+    }
+
+    .belt-arrow::after {
+      content: "";
+      position: absolute;
+      top: 4px;
+      width: 22px;
+      height: 22px;
+      background: linear-gradient(135deg, #9edee0, #3b98dc 58%, #256fab);
+      box-shadow: inset 1px 1px 0 rgba(255,255,255,.36), 0 0 12px rgba(37,111,171,.32);
+    }
+
+    .belt-arrow.top {
+      top: -54px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .belt-arrow.top::after {
+      left: 0;
+      clip-path: polygon(0 50%, 100% 0, 100% 100%);
+    }
+
+    .belt-arrow.bottom-flow {
+      top: 144px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .belt-arrow.bottom-flow::after {
+      right: 0;
+      clip-path: polygon(100% 50%, 0 0, 0 100%);
+    }
+
+    .pulley {
+      position: absolute;
+      top: 0;
+      width: 116px;
+      height: 116px;
+      border: 4px solid #000;
+      border-radius: 50%;
+      background: #b9dff1;
+      display: grid;
+      place-items: center;
+      z-index: 3;
+      box-shadow: 0 0 0 2px rgba(37,111,171,.32), inset 0 0 40px rgba(16,68,103,.18);
+    }
+
+    .pulley.left {
+      left: 0;
+    }
+
+    .pulley.right {
+      right: 0;
+    }
+
+    .pulley span {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: #8fcddb;
+      color: #123850;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .segments {
+      position: absolute;
+      left: 110px;
+      right: 110px;
+      top: 0;
+      display: grid;
+      grid-template-columns: 1.4fr 1fr 1fr .9fr 1fr 1.2fr 1fr 1.05fr 1.45fr;
+      gap: 8px;
+      z-index: 2;
+    }
+
+    .segments.bottom {
+      top: 94px;
+      left: 48%;
+      right: 110px;
+      grid-template-columns: repeat(6, 1fr);
+    }
+
+    .joint-cell {
+      min-width: 0;
+      display: grid;
+      grid-template-columns: 28px minmax(0, 1fr);
+      align-items: center;
+      gap: 6px;
+    }
+
+    .joint-cell.bottom-cell {
+      grid-template-columns: minmax(0, 1fr) 28px;
+    }
+
+    .joint-badge {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(#25ce78, #17aa5e);
+      color: #03110a;
+      font-size: 10px;
+      font-weight: 900;
+      line-height: 1;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.18), 0 2px 8px rgba(0,0,0,.12);
+      white-space: nowrap;
+    }
+
+    .joint-badge.warn {
+      background: linear-gradient(#ffbd32, #ef981d);
+      color: #1d1400;
+    }
+
+    .joint-badge.bad {
+      background: linear-gradient(#f35a49, #c83e37);
+      color: #210403;
+    }
+
+    .joint {
+      position: relative;
+      height: 30px;
+      border-radius: 5px;
+      border: 1px solid rgba(255,255,255,.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #03110a;
+      font-size: 10px;
+      font-weight: 900;
+      background: linear-gradient(#25ce78, #17aa5e);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.18);
+    }
+
+    .joint::before {
+      content: none;
+    }
+
+    .joint.warn {
+      background: linear-gradient(#ffbd32, #ef981d);
+      color: #1d1400;
+    }
+
+    .joint.bad {
+      background: linear-gradient(#f35a49, #c83e37);
+      color: #210403;
+    }
+
+    .joint.orange {
+      background: linear-gradient(#f4ad2b, #d78216);
+    }
+
+    .joint.bottom::before {
+      top: 38px;
+    }
+
+    .legend {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+      border-top: 1px solid rgba(143,205,219,.42);
+      margin-top: 18px;
+      padding-top: 12px;
+      color: #4f7d98;
+      font-size: 10px;
+    }
+
+    .legend i {
+      width: 8px;
+      height: 8px;
+      display: inline-block;
+      border-radius: 2px;
+      margin-right: 5px;
+      background: var(--green);
+    }
+
+    .legend .yellow i { background: var(--yellow); }
+    .legend .red i { background: var(--red); }
+    .legend .orange i { background: var(--orange); }
+    .legend .cyan i { background: var(--cyan); }
+
+    .charts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 26px 0;
+    }
+
+    .chart {
+      padding: 18px 18px 14px;
+      min-height: 355px;
+    }
+
+    .chart-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 22px;
+    }
+
+    .chart-title {
+      margin: 0;
+      color: #123850;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .chart-sub {
+      margin-top: 4px;
+      color: #4f7d98;
+      font-size: 11px;
+    }
+
+    .badge {
+      border: 1px solid var(--orange);
+      border-radius: 5px;
+      color: #256fab;
+      padding: 4px 8px;
+      font-size: 9px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .bar-chart {
+      height: 238px;
+      display: grid;
+      grid-template-columns: 38px 1fr;
+      gap: 12px;
+    }
+
+    .y-axis {
+      display: grid;
+      grid-template-rows: repeat(6, 1fr);
+      color: #b9aa88;
+      font-size: 9px;
+      text-align: right;
+      padding-top: 4px;
+    }
+
+    .plot {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(15, 1fr);
+      align-items: end;
+      gap: 8px;
+      padding: 0 0 22px;
+      border-left: 1px solid rgba(143,205,219,.24);
+      background:
+        linear-gradient(rgba(143,205,219,.28) 1px, transparent 1px);
+      background-size: 100% 39px;
+    }
+
+    .bar-group {
+      height: 100%;
+      display: flex;
+      align-items: end;
+      justify-content: center;
+      gap: 3px;
+      position: relative;
+    }
+
+    .bar-group::after {
+      content: attr(data-label);
+      position: absolute;
+      bottom: -20px;
+      color: #4f7d98;
+      font-size: 9px;
+      font-weight: 700;
+    }
+
+    .bar {
+      width: 11px;
+      border-radius: 2px 2px 0 0;
+      background: #2eb46a;
+      min-height: 18px;
+    }
+
+    .bar.orange {
+      background: var(--orange);
+    }
+
+    .bar.green {
+      background: #2eb46a;
+      width: 14px;
+    }
+
+    .bar.purple {
+      background: var(--purple);
+      width: 14px;
+    }
+
+    .chart-legend {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      margin-top: -2px;
+      color: #4f7d98;
+      font-size: 10px;
+    }
+
+    .chart-legend i {
+      width: 9px;
+      height: 9px;
+      display: inline-block;
+      margin-right: 5px;
+      background: #a99b68;
+    }
+
+    .chart-legend .second i {
+      background: var(--orange);
+    }
+
+    .chart-legend .purple i {
+      background: var(--purple);
+    }
+
+    .table-panel {
+      padding: 14px 14px 6px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      overflow: hidden;
+      font-size: 11px;
+    }
+
+    thead th {
+      height: 34px;
+      color: #4f7d98;
+      text-transform: uppercase;
+      font-size: 9px;
+      letter-spacing: .08em;
+      background: #d8eef9;
+      border-top: 1px solid rgba(143,205,219,.9);
+      border-bottom: 1px solid rgba(143,205,219,.9);
+    }
+
+    th:first-child {
+      border-left: 1px solid rgba(143,205,219,.9);
+      border-radius: 6px 0 0 0;
+    }
+
+    th:last-child {
+      border-right: 1px solid rgba(143,205,219,.9);
+      border-radius: 0 6px 0 0;
+    }
+
+    tbody td {
+      height: 38px;
+      text-align: center;
+      color: #123850;
+      font-weight: 700;
+      border-bottom: 1px solid rgba(143,205,219,.74);
+    }
+
+    tbody tr {
+      background: #eaf8fb;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #d8eef9;
+    }
+
+    td:first-child {
+      color: #0e3045;
+      font-weight: 900;
+    }
+
+    .ok {
+      color: var(--green);
+    }
+
+    .caution {
+      color: var(--yellow);
+    }
+
+    .fail {
+      color: var(--red);
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 54px;
+      height: 20px;
+      border-radius: 999px;
+      color: #0d4b2a;
+      background: rgba(34,197,110,.18);
+      border: 1px solid rgba(34,197,110,.55);
+      font-size: 8px;
+      font-weight: 900;
+    }
+
+    .pill.warn {
+      color: #6d4b00;
+      background: rgba(241,182,27,.16);
+      border-color: rgba(241,182,27,.62);
+    }
+
+    .pill.alarm {
+      color: #7a1713;
+      background: rgba(230,76,71,.18);
+      border-color: rgba(230,76,71,.65);
+    }
+
+    .detail-note {
+      max-width: 290px;
+      text-align: left;
+      white-space: normal;
+      line-height: 1.35;
+      color: #aeb7c8;
+      font-weight: 600;
+    }
+
+    @media (max-width: 980px) {
+      header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .header-actions {
+        justify-content: flex-start;
+      }
+
+      .cards,
+      .charts {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .belt-wrap {
+        margin-inline: 0;
+        overflow-x: auto;
+      }
+
+      .belt-track,
+      .segments {
+        min-width: 760px;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .dashboard {
+        padding-inline: 10px;
+      }
+
+      .cards,
+      .charts {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        white-space: normal;
+      }
+
+      .brand-logo {
+        width: min(100%, 360px);
+      }
+
+      .metric {
+        min-height: 92px;
+      }
+
+      .table-panel {
+        overflow-x: auto;
+      }
+
+      table {
+        min-width: 1320px;
+      }
+    }
+
+    @media print {
+      @page {
+        size: A4 landscape;
+        margin: 8mm;
+      }
+
+      body {
+        background: #fff;
+        color: #000;
+      }
+
+      .dashboard {
+        width: 100%;
+        padding: 0;
+      }
+
+      .tabs,
+      .line-tabs,
+      .header-actions,
+      .hint,
+      .cards,
+      .charts,
+      .legend,
+      .section-title {
+        display: none !important;
+      }
+
+      header {
+        display: flex !important;
+        align-items: flex-start;
+        justify-content: flex-start;
+        padding: 0 0 6mm;
+        border-bottom: 0;
+      }
+
+      .brand {
+        width: 118mm;
+        min-width: 0;
+        padding: 3mm 4mm;
+        border: 1px solid #8fcddb;
+        background: linear-gradient(135deg, #d8eef9, #b9dff1);
+      }
+
+      .brand-logo {
+        width: 100%;
+        max-height: 18mm;
+      }
+
+      .panel,
+      .metric,
+      .brand {
+        box-shadow: none;
+      }
+
+      .belt-panel,
+      .table-panel {
+        display: block !important;
+        background: #fff;
+        border: 0;
+        padding: 0;
+      }
+
+      .belt-panel {
+        margin-bottom: 10mm;
+      }
+
+      .belt-panel .panel-title {
+        display: none;
+      }
+
+      .belt-wrap {
+        height: 160px;
+        margin: 0;
+        overflow: visible;
+      }
+
+      .belt-track,
+      .segments {
+        min-width: 0;
+      }
+
+      .table-panel {
+        overflow: visible;
+      }
+
+      table {
+        min-width: 0;
+        font-size: 8px;
+      }
+
+      thead th {
+        color: #000;
+        background: #d8eef9;
+      }
+
+      tbody td {
+        color: #000;
+        height: 24px;
+      }
+
+      tbody tr,
+      tbody tr:nth-child(even) {
+        background: #fff;
+      }
+
+      .detail-note {
+        max-width: none;
+        color: #000;
+      }
+    }
+  </style>
+</head>
+<body class="locked">
+  <section class="auth-screen" aria-label="Dashboard sign in">
+    <div class="auth-card">
+      <img src="italian-thai-logo-dark.png" alt="Italian-Thai Development Public Company Limited · Mae Moh Mine Phase 9" />
+      <h2>Conveyor Dashboard</h2>
+      <p>กรอกรหัสผ่านเพื่อเปิด dashboard และโหลดข้อมูลจากฐานข้อมูลที่กำหนดไว้</p>
+      <form class="auth-form">
+        <label for="dashboard-password">Password</label>
+        <input id="dashboard-password" name="password" type="password" autocomplete="current-password" />
+        <button class="auth-submit" type="submit">Unlock Dashboard</button>
+        <div class="auth-message" role="status"></div>
+      </form>
+    </div>
+  </section>
+  <main class="dashboard">
+    <header>
+      <div class="brand">
+        <img class="brand-logo" src="italian-thai-logo-dark.png" alt="Italian-Thai Development Public Company Limited · Mae Moh Mine Phase 9" />
+      </div>
+      <div class="header-actions">
+        <div class="last-update">Last update<br>18/6/2569 10:11:22</div>
+        <button class="print-button" data-action="print">▤ Print</button>
+        <button class="summary-toggle" data-view="summary">Summary</button>
+        <button class="refresh">⟳ Refresh</button>
+        <button class="logout">↳ Logout</button>
+        <div class="data-source-status">Local fallback data</div>
+      </div>
+    </header>
+
+    <section class="summary-page" aria-label="Executive summary">
+      <div class="summary-hero">
+        <div class="summary-title-panel">
+          <h2>Executive Summary</h2>
+          <p>ภาพรวมสถานะสายพาน Line A และ Equipment สำหรับใช้สรุปต่อผู้บริหาร แสดงจำนวนจุดตรวจทั้งหมด ความยาวรวม สถานะเฝ้าระวัง และรายการเสี่ยงที่ควรติดตามก่อนเปิดดูรายละเอียดเชิงลึก</p>
+          <div class="summary-actions">
+            <button class="open-detail" type="button">ดูข้อมูลละเอียด</button>
+            <button class="refresh" type="button">⟳ Refresh</button>
+          </div>
+        </div>
+        <div class="summary-status-panel">
+          <div class="summary-status-label">Overall Status</div>
+          <div class="summary-status-value">NORMAL</div>
+          <p class="summary-status-note">No active alarms</p>
+        </div>
+      </div>
+
+      <section class="summary-grid" aria-label="Executive KPI cards">
+        <article class="summary-card"><strong data-summary="lines">0</strong><span>Lines / equipment tabs with data</span></article>
+        <article class="summary-card"><strong data-summary="joints">0</strong><span>Total inspection joints</span></article>
+        <article class="summary-card"><strong data-summary="length">0</strong><span>Total belt length (m)</span></article>
+        <article class="summary-card"><strong data-summary="alarms">0</strong><span>Alarm points</span></article>
+        <article class="summary-card"><strong data-summary="monitors">0</strong><span>Monitor points</span></article>
+        <article class="summary-card"><strong data-summary="equipment">0</strong><span>Equipment records</span></article>
+      </section>
+
+      <section class="summary-panels">
+        <article class="panel">
+          <div class="chart-head">
+            <div>
+              <h3 class="chart-title">Priority Watchlist</h3>
+              <div class="chart-sub">Sorted by alarm and monitor status</div>
+            </div>
+            <span class="badge">Live</span>
+          </div>
+          <div class="summary-list"></div>
+        </article>
+
+        <article class="panel">
+          <div class="chart-head">
+            <div>
+              <h3 class="chart-title">Line Status</h3>
+              <div class="chart-sub">Line A summary by tab</div>
+            </div>
+            <span class="badge">Overview</span>
+          </div>
+          <table class="summary-table">
+            <thead>
+              <tr><th>Line</th><th>Joints</th><th>Length</th><th>Alarm</th><th>Monitor</th><th>Status</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </article>
+
+        <article class="panel">
+          <div class="chart-head">
+            <div>
+              <h3 class="chart-title">Equipment Status</h3>
+              <div class="chart-sub">CR / SPD / BWE / BW summary</div>
+            </div>
+            <span class="badge">Equipment</span>
+          </div>
+          <table class="equipment-summary-table">
+            <thead>
+              <tr><th>Equipment</th><th>Joints</th><th>Width</th><th>Belt Hr</th><th>Status</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </article>
+      </section>
+    </section>
+
+    <div class="detail-page">
+    <nav class="tabs" aria-label="Dashboard tabs">
+      <div class="tab active" data-section="lineA">▲ Line A</div>
+      <div class="tab">▣ Line B</div>
+      <div class="tab" data-section="equipment">◈ Equipment</div>
+    </nav>
+
+    <p class="hint"><span class="status-dot"></span> Connected : Belt Map S1, S1A, S1B, S2, S2A, S3, S4, C1, C2, B1, B2, B3</p>
+
+    <nav class="line-tabs" aria-label="Belt lines">
+      <div class="line-tab active"><span class="status-dot"></span>S1</div>
+      <div class="line-tab"><span class="status-dot"></span>S2A</div>
+      <div class="line-tab"><span class="status-dot"></span>S2B</div>
+      <div class="line-tab"><span class="status-dot"></span>S2C</div>
+      <div class="line-tab"><span class="status-dot"></span>S3</div>
+      <div class="line-tab"><span class="status-dot"></span>S5</div>
+      <div class="line-tab"><span class="status-dot"></span>C1</div>
+      <div class="line-tab"><span class="status-dot"></span>C2</div>
+      <div class="line-tab"><span class="status-dot"></span>B1</div>
+      <div class="line-tab"><span class="status-dot"></span>B2</div>
+      <div class="line-tab"><span class="status-dot"></span>B3</div>
+    </nav>
+
+    <section class="cards" aria-label="Summary metrics">
+      <article class="metric">
+        <div class="metric-head"><div class="metric-icon">🔗</div><div class="metric-value">15</div></div>
+        <div class="metric-label">จำนวน JOINT<br>จุดต่อ</div>
+      </article>
+      <article class="metric">
+        <div class="metric-head"><div class="metric-icon">📐</div><div class="metric-value">1,971</div></div>
+        <div class="metric-label">ความยาวสายพานรวม<br>เมตร</div>
+      </article>
+      <article class="metric">
+        <div class="metric-head"><div class="metric-icon">📏</div><div class="metric-value">32.0</div></div>
+        <div class="metric-label">ความกว้าง<br>นิ้ว/มิลลิเมตร</div>
+      </article>
+      <article class="metric">
+        <div class="metric-head"><div class="metric-icon">⚠</div><div class="metric-value">7</div></div>
+        <div class="metric-label">แจ้งเตือนความเสียหาย<br>จุด</div>
+      </article>
+    </section>
+
+    <h2 class="section-title">Belt Map · สัดส่วนความยาวสายพานแต่ละ Joint</h2>
+    <section class="panel belt-panel">
+      <h3 class="panel-title">Line S1</h3>
+      <div class="belt-wrap">
+        <div class="belt-track"></div>
+        <div class="belt-arrow top" aria-hidden="true"></div>
+        <div class="belt-arrow bottom-flow" aria-hidden="true"></div>
+        <div class="pulley left"><span>HEAD</span></div>
+        <div class="pulley right"><span>TAIL</span></div>
+        <div class="segments">
+          <div class="joint" data-joint="J9">88.3m</div>
+          <div class="joint" data-joint="J10">106.7m</div>
+          <div class="joint" data-joint="J11">197.8m</div>
+          <div class="joint" data-joint="J12">118.6m</div>
+          <div class="joint bad" data-joint="J16">33m</div>
+          <div class="joint bad" data-joint="J17">64.6m</div>
+          <div class="joint bad" data-joint="J18">188.4m</div>
+          <div class="joint" data-joint="J19">198m</div>
+          <div class="joint" data-joint="J20">197.7m</div>
+        </div>
+        <div class="segments bottom">
+          <div class="joint bottom" data-joint="J25">197.7m</div>
+          <div class="joint bottom" data-joint="J26">197.7m</div>
+          <div class="joint bottom bad" data-joint="J25">70.8m</div>
+          <div class="joint bottom warn" data-joint="J24">30.8m</div>
+          <div class="joint bottom orange" data-joint="J23">32.7m</div>
+          <div class="joint bottom" data-joint="J22">181.7m</div>
+        </div>
+      </div>
+      <div class="legend">
+        <span><i></i> Normal</span>
+        <span class="yellow"><i></i> Monitor</span>
+        <span class="red"><i></i> Alarm</span>
+      </div>
+    </section>
+
+    <section class="charts" aria-label="Charts">
+      <article class="panel chart">
+        <div class="chart-head">
+          <div>
+            <h3 class="chart-title">ความหนา (MM)</h3>
+            <div class="chart-sub">Line · Edge</div>
+          </div>
+          <span class="badge">View</span>
+        </div>
+        <div class="bar-chart">
+          <div class="y-axis">
+            <span>34 mm</span><span>32 mm</span><span>30 mm</span><span>28 mm</span><span>26 mm</span><span>22 mm</span>
+          </div>
+          <div class="plot">
+            <div class="bar-group" data-label="J9"><span class="bar" style="height: 86%"></span><span class="bar orange" style="height: 91%"></span></div>
+            <div class="bar-group" data-label="J10"><span class="bar" style="height: 92%"></span><span class="bar orange" style="height: 88%"></span></div>
+            <div class="bar-group" data-label="J11"><span class="bar" style="height: 80%"></span><span class="bar orange" style="height: 78%"></span></div>
+            <div class="bar-group" data-label="J12"><span class="bar" style="height: 89%"></span><span class="bar orange" style="height: 97%"></span></div>
+            <div class="bar-group" data-label="J15"><span class="bar" style="height: 71%"></span><span class="bar orange" style="height: 70%"></span></div>
+            <div class="bar-group" data-label="J17"><span class="bar" style="height: 68%"></span><span class="bar orange" style="height: 69%"></span></div>
+            <div class="bar-group" data-label="J18"><span class="bar" style="height: 75%"></span><span class="bar orange" style="height: 79%"></span></div>
+            <div class="bar-group" data-label="J19"><span class="bar" style="height: 84%"></span><span class="bar orange" style="height: 77%"></span></div>
+            <div class="bar-group" data-label="J20"><span class="bar" style="height: 83%"></span><span class="bar orange" style="height: 74%"></span></div>
+            <div class="bar-group" data-label="J21"><span class="bar" style="height: 88%"></span><span class="bar orange" style="height: 91%"></span></div>
+            <div class="bar-group" data-label="J22"><span class="bar" style="height: 73%"></span><span class="bar orange" style="height: 69%"></span></div>
+            <div class="bar-group" data-label="J24"><span class="bar" style="height: 68%"></span><span class="bar orange" style="height: 68%"></span></div>
+            <div class="bar-group" data-label="J25"><span class="bar" style="height: 72%"></span><span class="bar orange" style="height: 76%"></span></div>
+            <div class="bar-group" data-label="J26"><span class="bar" style="height: 81%"></span><span class="bar orange" style="height: 83%"></span></div>
+            <div class="bar-group" data-label="J27"><span class="bar" style="height: 84%"></span><span class="bar orange" style="height: 81%"></span></div>
+          </div>
+        </div>
+        <div class="chart-legend"><span><i></i>L.Edge (mm)</span><span class="second"><i></i>R.Edge (mm)</span></div>
+      </article>
+
+      <article class="panel chart">
+        <div class="chart-head">
+          <div>
+            <h3 class="chart-title">ความแข็ง Shore A</h3>
+            <div class="chart-sub">Average of Hard L · C · R</div>
+          </div>
+          <span class="badge">View</span>
+        </div>
+        <div class="bar-chart">
+          <div class="y-axis">
+            <span>80 A</span><span>75 A</span><span>70 A</span><span>65 A</span><span>60 A</span><span>55 A</span>
+          </div>
+          <div class="plot">
+            <div class="bar-group" data-label="J9"><span class="bar green" style="height: 45%"></span><span class="bar purple" style="height: 51%"></span></div>
+            <div class="bar-group" data-label="J10"><span class="bar green" style="height: 42%"></span><span class="bar purple" style="height: 54%"></span></div>
+            <div class="bar-group" data-label="J11"><span class="bar green" style="height: 49%"></span><span class="bar purple" style="height: 47%"></span></div>
+            <div class="bar-group" data-label="J12"><span class="bar green" style="height: 43%"></span><span class="bar purple" style="height: 56%"></span></div>
+            <div class="bar-group" data-label="J16"><span class="bar green" style="height: 90%"></span><span class="bar purple" style="height: 89%"></span></div>
+            <div class="bar-group" data-label="J17"><span class="bar green" style="height: 91%"></span><span class="bar purple" style="height: 90%"></span></div>
+            <div class="bar-group" data-label="J18"><span class="bar green" style="height: 47%"></span><span class="bar purple" style="height: 41%"></span></div>
+            <div class="bar-group" data-label="J19"><span class="bar green" style="height: 36%"></span><span class="bar purple" style="height: 36%"></span></div>
+            <div class="bar-group" data-label="J20"><span class="bar green" style="height: 34%"></span><span class="bar purple" style="height: 33%"></span></div>
+            <div class="bar-group" data-label="J22"><span class="bar green" style="height: 32%"></span><span class="bar purple" style="height: 35%"></span></div>
+            <div class="bar-group" data-label="J24"><span class="bar green" style="height: 54%"></span><span class="bar purple" style="height: 72%"></span></div>
+            <div class="bar-group" data-label="J25"><span class="bar green" style="height: 62%"></span><span class="bar purple" style="height: 52%"></span></div>
+            <div class="bar-group" data-label="J26"><span class="bar green" style="height: 53%"></span><span class="bar purple" style="height: 49%"></span></div>
+            <div class="bar-group" data-label="J27"><span class="bar green" style="height: 50%"></span><span class="bar purple" style="height: 48%"></span></div>
+            <div class="bar-group" data-label="J28"><span class="bar green" style="height: 45%"></span><span class="bar purple" style="height: 47%"></span></div>
+          </div>
+        </div>
+        <div class="chart-legend"><span><i style="background:#2eb46a"></i>Average Hardness (Shore A)</span></div>
+      </article>
+    </section>
+
+    <h2 class="section-title">รายละเอียดแต่ละ Joint</h2>
+    <section class="panel table-panel">
+      <table class="detail-table" aria-label="Joint detail table">
+        <thead>
+          <tr>
+            <th>Joint</th>
+            <th>Make Date</th>
+            <th>Length (m)</th>
+            <th>Brand</th>
+            <th>Type</th>
+            <th>Size</th>
+            <th>Side L</th>
+            <th>Side R</th>
+            <th>Hard Top</th>
+            <th>Hard Bot</th>
+            <th>Alarm</th>
+            <th>Warning</th>
+            <th>Status</th>
+            <th>Group</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>J9</td><td>14/8/2024</td><td>88.3</td><td>UBI</td><td>YSR</td><td>72,0"</td>
+            <td class="ok">23.0</td><td class="ok">23.3</td><td>65.6</td><td>68.3</td><td>-</td><td>-</td><td><span class="pill">NORMAL</span></td><td>2</td>
+          </tr>
+          <tr>
+            <td>J10</td><td>B.C. 17/2/2025</td><td>106.7</td><td>UBI</td><td>YSR</td><td>72,0"</td>
+            <td class="ok">32.0</td><td class="ok">32.2</td><td>67.6</td><td>70.0</td><td>-</td><td>-</td><td><span class="pill">NORMAL</span></td><td>2</td>
+          </tr>
+          <tr>
+            <td>J11</td><td>19/8/2567</td><td>197.8</td><td>UBI</td><td>YSR</td><td>72,0"</td>
+            <td class="ok">32.0</td><td class="caution">31.8</td><td>67.0</td><td>68.3</td><td class="fail">1</td><td class="fail">1</td><td><span class="pill">NORMAL</span></td><td>2</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+    </div>
+  </main>
+  <script>
+    const DASHBOARD_API_STORAGE_KEY = "conveyor-dashboard-api-url";
+    const apiUrlFromQuery = new URLSearchParams(window.location.search).get("api");
+    if (apiUrlFromQuery) localStorage.setItem(DASHBOARD_API_STORAGE_KEY, apiUrlFromQuery);
+    const DASHBOARD_API_URL = apiUrlFromQuery || localStorage.getItem(DASHBOARD_API_STORAGE_KEY) || "https://script.google.com/macros/s/AKfycbxVoHKr-KmOtTsmBpIH2IplOZBLy5oNNJyv66IuQEnCtIPpKZsQ4SX7eF7lvmJ8sK-z/exec";
+    const LOCAL_PREVIEW_PASSWORD = "ITD2569";
+    const AUTH_STORAGE_KEY = "conveyor-dashboard-password";
+
+    const dashboardDatas = {
+      "A1.1": {
+      summary: {
+        line: "A1.1",
+        update: "2026-05-12",
+        jointCount: 14,
+        totalLength: 2728.9,
+        smuAvgBelt: 1334.4,
+        smuAvgSplice: 1,
+        width: 2200
+      },
+      joints: [
+        { joint: "J1", thickL: 34.5, thickR: 34.6, hardL: 59, hardC: 60, hardR: 61, width: 2200, st: 4000, brand: "UBI", type: "XSR", length: 198.35, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "ระยะ Splice 2.65 m. Pre Joint ITD 22/4/69 ITD+ITH จีน คูลน้ำ (ปลั๊กซอตขั้นตอนจับเวลา Curing Time)" },
+        { joint: "J2", thickL: 35.2, thickR: 35.2, hardL: 62, hardC: 60, hardR: 60, width: 2200, st: 4000, brand: "UBI", type: "XSR", length: 198.35, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "ระยะ Splice 2.65 m. Pre Joint ITD 20/4/69 ITD+ITH จีน คูลน้ำ" },
+        { joint: "J3", thickL: 34.9, thickR: 35.0, hardL: 61, hardC: 59, hardR: 60, width: 2200, st: 4000, brand: "UBI", type: "XSR", length: 198.35, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "ระยะ Splice 2.65 m. Pre Joint ITD 28/4/69 ITD+ITH จีน คูลน้ำ" },
+        { joint: "J4", thickL: 34.0, thickR: 34.3, hardL: 59, hardC: 59, hardR: 60, width: 2200, st: 4000, brand: "UBI", type: "XSR", length: 198.35, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "ระยะ Splice 2.65 m. Pre Joint TKS 20/4/69 All max" },
+        { joint: "J5", thickL: 34.0, thickR: 33.9, hardL: 60, hardC: 60, hardR: 59, width: 2200, st: 4000, brand: "UBI", type: "XSR", length: 198.35, beltHours: 1, spliceHours: 1, spliceBrand: "TIPTOP", note: "ระยะ Splice 2.65 m. Pre Joint TKS 21/4/69 All max" },
+        { joint: "J6", thickL: 34.7, thickR: 34.3, hardL: 61, hardC: 58, hardR: 60, width: 2200, st: 4000, brand: "UBI", type: "XSR", length: 151.35, beltHours: 1, spliceHours: 1, spliceBrand: "TIPTOP", note: "ระยะ Splice 2.65 m. Pre Joint TKS 22/4/69 All max" },
+        { joint: "J7", thickL: 35.2, thickR: 35.3, hardL: 55, hardC: 57, hardR: 60, width: 2200, st: 3500, brand: "UBI", type: "XSR", length: 197.35, beltHours: 2, spliceHours: 1, spliceBrand: "TIPTOP", note: "ระยะ Splice 2.65 m. Pre Joint TKS 23/4/69 All max" },
+        { joint: "J8", thickL: 35.4, thickR: 35.3, hardL: 56, hardC: 60, hardR: 55, width: 2200, st: 4000, brand: "UBI", type: "XSR", length: 198.35, beltHours: 1, spliceHours: 1, spliceBrand: "TIPTOP", note: "ระยะ Splice 2.65 m. Pre Joint ITD+ITH 24/4/69 จีน คูลน้ำ" },
+        { joint: "J9", thickL: 34.8, thickR: 34.8, hardL: 60, hardC: 60, hardR: 60, width: 2200, st: 4000, brand: "UBI", type: "XSR", length: 198.35, beltHours: 1, spliceHours: 1, spliceBrand: "TIPTOP", note: "ระยะ Splice 2.65 m. Pre Joint ITD+ITH 25/4/69 จีน คูลน้ำ" },
+        { joint: "J10", thickL: 29.8, thickR: 29.7, hardL: 67, hardC: 67, hardR: 66, width: 2200, st: 4000, brand: "CG", type: "X-Plus", length: 198.35, beltHours: 16001, spliceHours: 1, spliceBrand: "TIPTOP", note: "ระยะ Splice 2.65 m. Pre Joint TKS 26/4/69 All max" },
+        { joint: "J11", thickL: 33.7, thickR: 34.2, hardL: 60, hardC: 59, hardR: 62, width: 2200, st: 4000, brand: "UBI", type: "XSR", length: 198.35, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "ระยะ Splice 2.65 m. Pre Joint ITD+ITH 26/4/69 จีน คูลน้ำ" },
+        { joint: "J12", thickL: 34.1, thickR: 34.4, hardL: 59, hardC: 60, hardR: 62, width: 2200, st: 4000, brand: "UBI", type: "XSR", length: 198.35, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "ระยะ Splice 2.65 m. Pre Joint ITD+ITH 25/4/69 จีน คูลน้ำ" },
+        { joint: "J13", thickL: 34.6, thickR: 34.7, hardL: 60, hardC: 60, hardR: 60, width: 2200, st: 4000, brand: "UBI", type: "XSR", length: 198.35, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "ระยะ Splice 2.65 m. Pre Joint ITD+ITH 24/4/69 จีน คูลน้ำ" },
+        { joint: "J14", thickL: 33.9, thickR: 34.4, hardL: 59, hardC: 63, hardR: 63, width: 2200, st: 4000, brand: "UBI", type: "XSR", length: 198.35, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "ระยะ Splice 2.65 m. Pre Joint ITD+ITH 23/4/69 จีน คูลน้ำ" }
+      ]
+    },
+      "A1": {
+        summary: { line: "A1", update: "2026-05-12", jointCount: 12, totalLength: 1581.83, smuAvgBelt: 7747.8, smuAvgSplice: 3052.7, width: 2200 },
+        joints: [
+          { joint: "J1", thickL: 29, thickR: 30, hardL: 75, hardC: 75, hardR: 76, width: 2200, st: 3500, brand: "UBI", type: "XSR", length: 109.8, beltHours: 11491, spliceHours: 1, spliceBrand: "TIPTOP", note: "ระยะ Splice 2.35 m. (TKS3/11/68 แผ่นจีน ปล่อยเย็น)" },
+          { joint: "J2", thickL: 32, thickR: 32, hardL: 73, hardC: 71, hardR: 75, width: 2200, st: 3500, brand: "UBI", type: "XSR", length: 159.56, beltHours: 11491, spliceHours: 6532, spliceBrand: "CC", note: "ระยะ Splice 2.35 m. (ITD9/7/68 VM.ITH ปล่อยเย็น)" },
+          { joint: "J3", thickL: 29, thickR: 30, hardL: 75, hardC: 75, hardR: 76, width: 2200, st: 3500, brand: "UBI", type: "XSR", length: 62.23, beltHours: 11491, spliceHours: 5808, spliceBrand: "UBI", note: "ระยะ Splice 2.35 m. (Final TKS 30/3/69 แผ่นจีน+All max ปล่อยเย็น)" },
+          { joint: "J4", thickL: 29, thickR: 30, hardL: 75, hardC: 75, hardR: 76, width: 2200, st: 3500, brand: "CC", type: "Momster", length: 162.54, beltHours: 11491, spliceHours: 5808, spliceBrand: "UBI", note: "ระยะ Splice 2.35 m. (เปลี่ยนสายพาน TKS 3/12/67 VM.ITH คูลน้ำ)" },
+          { joint: "J5", thickL: 32, thickR: 32, hardL: 75, hardC: 75, hardR: 75, width: 2200, st: 3500, brand: "UBI", type: "XSR", length: 239.25, beltHours: 5509, spliceHours: 82, spliceBrand: "UBI", note: "ระยะ Splice 1.65 m. (Short TKS 25/10/68 แผ่น All max คูลน้ำ)" },
+          { joint: "J6", thickL: 30, thickR: 30, hardL: 71, hardC: 71, hardR: 72, width: 2200, st: 3500, brand: "UBI", type: "XSR", length: 235.9, beltHours: 6177, spliceHours: 6172, spliceBrand: "UBI", note: "ระยะ Splice 2.35 m. (Short 132m TKS 5/2/68 VM.3 คูลน้ำ)" },
+          { joint: "J7", thickL: 32, thickR: 32, hardL: 75, hardC: 75, hardR: 75, width: 2200, st: 3500, brand: "UBI", type: "XSR", length: 61.7, beltHours: 6177, spliceHours: 6532, spliceBrand: "UBI", note: "ระยะ Splice 2.35 m. (Prejoint 4/3/69 TKS แผ่นจีน+All max ปล่อยเย็น)" },
+          { joint: "J8", thickL: 28, thickR: 25, hardL: 77, hardC: 75, hardR: 78, width: 2200, st: 3500, brand: "UBI", type: "XSR", length: 19, beltHours: 4482, spliceHours: 604, spliceBrand: "UBI", note: "ระยะ Splice 2.35 m. (TKS 14/8/68 แผ่น All max คูลน้ำ)" },
+          { joint: "J9", thickL: 31, thickR: 32, hardL: 71, hardC: 75, hardR: 75, width: 2200, st: 3500, brand: "CC", type: "Momster", length: 108, beltHours: 4786, spliceHours: 1, spliceBrand: "UBI", note: "ระยะ Splice 2.35 m. (ITD15/10/68 แผ่นจีน คูลน้ำ)" },
+          { joint: "J10", thickL: 32, thickR: 32, hardL: 71, hardC: 71, hardR: 72, width: 2200, st: 3500, brand: "UBI", type: "XSR", length: 247.6, beltHours: 4487, spliceHours: 4487, spliceBrand: "SEM", note: "ระยะ Splice 2.35 m. (TKS 19/12/67 VM.3 คูลน้ำ)" },
+          { joint: "J11", thickL: 31, thickR: 32, hardL: 71, hardC: 77, hardR: 77, width: 2200, st: 3500, brand: "CC", type: "Momster", length: 73.9, beltHours: 10909, spliceHours: 1, spliceBrand: "TIPTOP", note: "ระยะ Splice 2.35 m. (TKS29/10/68 แผ่นจีน ปล่อยเย็น)" },
+          { joint: "J12", thickL: 31, thickR: 33, hardL: 71, hardC: 70, hardR: 70, width: 2200, st: 3500, brand: "UBI", type: "XSR", length: 102.35, beltHours: 4482, spliceHours: 604, spliceBrand: "UBI", note: "ระยะ Splice 2.35 m. (TKS 21/6/68 แผ่น All max คูลน้ำ)" }
+        ]
+      },
+      "A2": {
+        summary: { line: "A2", update: "2026-05-12", jointCount: 13, totalLength: 1352.24, smuAvgBelt: 4831, smuAvgSplice: 1132, width: 2200 },
+        joints: [
+          { joint: "J1", thickL: 31, thickR: 32, hardL: 75, hardC: 75, hardR: 76, width: 2200, st: 3500, brand: "CC", type: "Momster", length: 5.7, beltHours: 4778, spliceHours: 4778, spliceBrand: "UBI", note: "Splice 2.35 m. (Prejoint TKS03/10/68)" },
+          { joint: "J2", thickL: 32, thickR: 32, hardL: 75, hardC: 75, hardR: 78, width: 2200, st: 3500, brand: "", type: "Momster", length: 68.4, beltHours: 3418, spliceHours: 3418, spliceBrand: "UBI", note: "Splice 2.35 m. (Pre Joint TKS 2/10/68 VM.3)" },
+          { joint: "J3", thickL: 33, thickR: 31, hardL: 75, hardC: 75, hardR: 75, width: 2200, st: 3500, brand: "CC", type: "Momster", length: 41.1, beltHours: 4778, spliceHours: 4778, spliceBrand: "UBI", note: "Splice 2.35 m. (Prejoint TKS03/10/68)" },
+          { joint: "J4", thickL: 31, thickR: 30, hardL: 75, hardC: 75, hardR: 75, width: 2200, st: 3500, brand: "CC", type: "Momster", length: 160.74, beltHours: 3418, spliceHours: 3418, spliceBrand: "UBI", note: "Splice 2.35 m. (Pre Joint TKS 19/4/67 VM.3)" },
+          { joint: "J5", thickL: 32, thickR: 32, hardL: 70, hardC: 70, hardR: 70, width: 2200, st: 3500, brand: "UBI", type: "XSR", length: 247.2, beltHours: 3418, spliceHours: 1, spliceBrand: "UBI", note: "Splice 2.35 m. (TKS 15/7/67 VM.3)" },
+          { joint: "J7", thickL: 28, thickR: 25, hardL: 77, hardC: 75, hardR: 78, width: 2200, st: 3500, brand: "CC", type: "Momster", length: 81, beltHours: 10909, spliceHours: 604, spliceBrand: "UBI", note: "Splice 2.35 m. (Prejoint TKS14/10/68)" },
+          { joint: "J8", thickL: 32, thickR: 32, hardL: 71, hardC: 71, hardR: 72, width: 2200, st: 3500, brand: "UBI", type: "XSR", length: 239.1, beltHours: 4482, spliceHours: 1, spliceBrand: "UBI", note: "Splice 2.35 m. (Pre Joint TKS10/3/69)" },
+          { joint: "J9", thickL: 33, thickR: 33, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 3500, brand: "CC", type: "Momster", length: 25, beltHours: 4482, spliceHours: 1, spliceBrand: "UBI", note: "Splice 2.35 m. (TKS 6/5/68 VM.3)" },
+          { joint: "J10", thickL: 32, thickR: 32, hardL: 71, hardC: 71, hardR: 72, width: 2200, st: 3500, brand: "UBI", type: "XSR", length: 247.6, beltHours: 4526, spliceHours: 4526, spliceBrand: "SEM", note: "Splice 2.35 m. (Prejoint TKS26/9/68)" },
+          { joint: "J11", thickL: 30, thickR: 31, hardL: 75, hardC: 75, hardR: 75, width: 2200, st: 3500, brand: "UBI", type: "XSR", length: 50, beltHours: 4825, spliceHours: 1, spliceBrand: "UBI", note: "Splice 2.35 m. (TKS 19/12/67 VM.3)" },
+          { joint: "J12", thickL: 31, thickR: 32, hardL: 75, hardC: 75, hardR: 76, width: 2200, st: 3500, brand: "CC", type: "Momster", length: 55.9, beltHours: 5492, spliceHours: 1, spliceBrand: "UBI", note: "Splice 2.35 m. (Prejoint TKS01/10/68)" },
+          { joint: "J13", thickL: 32, thickR: 32, hardL: 75, hardC: 75, hardR: 76, width: 2200, st: 3500, brand: "CC", type: "Momster", length: 114.94, beltHours: 5492, spliceHours: 1, spliceBrand: "UBI", note: "Splice 2.35 m. (Prejoint TKS11/3/69)" },
+          { joint: "J14", thickL: 31, thickR: 31, hardL: 72, hardC: 72, hardR: 76, width: 2200, st: 3500, brand: "CC", type: "Momster", length: 15.56, beltHours: 5492, spliceHours: 1, spliceBrand: "UBI", note: "Splice 2.35 m. (Final TKS27/3/69)" }
+        ]
+      },
+      "A3": {
+        summary: { line: "A3", update: "2026-05-12", jointCount: 5, totalLength: 1007.05, smuAvgBelt: 1099, smuAvgSplice: 1, width: 2200 },
+        joints: [
+          { joint: "J1", thickL: 32, thickR: 32, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 3500, brand: "SEM", type: "XCG-M", length: 247.65, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "Splice 2.35 m. (Pre Joint TKS 3/4/69)" },
+          { joint: "J2", thickL: 32, thickR: 32, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 3500, brand: "SEM", type: "XCG-M", length: 247.65, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "Splice 2.35 m. (Pre Joint TKS 4/4/69)" },
+          { joint: "J3", thickL: 32, thickR: 32, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 3500, brand: "SEM", type: "XCG-M", length: 247.65, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "Splice 2.35 m. (Pre Joint TKS 5/4/69)" },
+          { joint: "J4", thickL: 32.4, thickR: 32.2, hardL: 72, hardC: 75, hardR: 75, width: 2200, st: 3500, brand: "CC", type: "Momster", length: 80, beltHours: 5492, spliceHours: 1, spliceBrand: "UBI", note: "Splice 2.35 m. (Pre Joint TKS 7/4/69)" },
+          { joint: "J5", thickL: 32, thickR: 32, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 3500, brand: "SEM", type: "XCG-M", length: 184.1, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "Splice 2.35 m. (Final TKS 18/4/69)" }
+        ]
+      },
+      "A4": {
+        summary: { line: "A4", update: "2026-05-12", jointCount: 10, totalLength: 1932.25, smuAvgBelt: 1, smuAvgSplice: 1, width: 2200 },
+        joints: [
+          { joint: "J1", thickL: 35, thickR: 35, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 4000, brand: "UBI", type: "XSR", length: 198.35, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "Splice 2.65 m. Pre TKS16/4/69" },
+          { joint: "J2", thickL: 35, thickR: 35, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 4000, brand: "UBI", type: "XSR", length: 198.35, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "Splice 2.65 m. Pre TKS10/4/69" },
+          { joint: "J3", thickL: 35, thickR: 35, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 4000, brand: "UBI", type: "XSR", length: 198.35, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "Splice 2.65 m. Pre TKS9/4/69" },
+          { joint: "J4", thickL: 35, thickR: 35, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 4000, brand: "UBI", type: "XSR", length: 198.35, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "Splice 2.65 m. Pre ITD+ITH14/4/69 All max" },
+          { joint: "J5", thickL: 35, thickR: 35, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 4000, brand: "UBI", type: "XSR", length: 198.35, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "Splice 2.65 m. Pre" },
+          { joint: "J5.1", thickL: 35, thickR: 35, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 4000, brand: "UBI", type: "XSR", length: 147.1, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "Splice 2.65 m. Pre TKS17/4/69" },
+          { joint: "J6", thickL: 35, thickR: 35, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 4000, brand: "UBI", type: "XSR", length: 198.35, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "Splice 2.65 m. Pre ITD-ITH8/4/69" },
+          { joint: "J7", thickL: 35, thickR: 35, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 4000, brand: "UBI", type: "XSR", length: 198.35, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "Splice 2.65 m. Pre ITD+ITH 9/4/69 All max" },
+          { joint: "J8", thickL: 35, thickR: 35, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 4000, brand: "UBI", type: "XSR", length: 198.35, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "Splice 2.65 m. ITD+ITH10/4/69 All max" },
+          { joint: "J9", thickL: 35, thickR: 35, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 4000, brand: "UBI", type: "XSR", length: 198.35, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "Splice 2.65 m. Pre TKS14/4/69" }
+        ]
+      },
+      "A5": {
+        summary: { line: "A5", update: "2026-05-12", jointCount: 14, totalLength: 2421.9, smuAvgBelt: 1, smuAvgSplice: 1, width: 2200 },
+        joints: [
+          { joint: "J1", thickL: 35, thickR: 35, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 4000, brand: "UBI", type: "XSR", length: 198.35, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "Splice 2.65 m. Pre Joint TKS13/3/69 All max" },
+          { joint: "J2", thickL: 35, thickR: 35, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 4000, brand: "UBI", type: "XSR", length: 198.35, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "Splice 2.65 m. Pre Joint TKS14/3/69 All max" },
+          { joint: "J3", thickL: 35, thickR: 35, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 4000, brand: "UBI", type: "XSR", length: 198.35, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "Splice 2.65 m. Pre Joint TKS16/3/69 All max" },
+          { joint: "J4", thickL: 35, thickR: 35, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 4000, brand: "UBI", type: "XSR", length: 198.35, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "Splice 2.65 m. Pre Joint TKS18/3/69 All max" },
+          { joint: "J5", thickL: 35, thickR: 35, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 4000, brand: "UBI", type: "XSR", length: 198.35, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "Splice 2.65 m. Pre Joint TKS19/3/69 All max" },
+          { joint: "J6", thickL: 35, thickR: 35, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 4000, brand: "UBI", type: "XSR", length: 198.35, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "Splice 2.65 m. Pre Joint TKS20/3/69 All max" },
+          { joint: "J7", thickL: 35, thickR: 35, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 4000, brand: "UBI", type: "XSR", length: 198.35, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "Splice 2.65 m. Pre Joint TKS21/3/69 All max" },
+          { joint: "J8", thickL: 35, thickR: 35, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 4000, brand: "UBI", type: "XSR", length: 198.35, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "Splice 2.65 m. Pre Joint TKS22/3/69 All max" },
+          { joint: "J9", thickL: 35, thickR: 35, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 4000, brand: "UBI", type: "XSR", length: 198.35, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "Splice 2.65 m. Pre Joint TKS23/3/69 All max" },
+          { joint: "J10", thickL: 35, thickR: 35, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 4000, brand: "UBI", type: "XSR", length: 198.35, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "Splice 2.65 m. Pre Joint TKS24/3/69 All max" },
+          { joint: "J11", thickL: 35, thickR: 35, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 4000, brand: "UBI", type: "XSR", length: 198.35, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "Splice 2.65 m. Pre Joint TKS25/3/69 All max" },
+          { joint: "J12", thickL: 35, thickR: 35, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 4000, brand: "UBI", type: "XSR", length: 23.35, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "Splice 2.65 m. Pre Joint TKS26/3/69 All max" },
+          { joint: "J14", thickL: 35, thickR: 35, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 4000, brand: "UBI", type: "XSR", length: 18.35, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "Splice 2.65 m. Pre Joint TKS1/4/69 All max" },
+          { joint: "J13", thickL: 35, thickR: 35, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 4000, brand: "UBI", type: "XSR", length: 198.35, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "Splice 2.65 m. Pre Joint TKS31/3/69 All max" }
+        ]
+      },
+      "A6": {
+        summary: { line: "A6", update: "2026-05-12", jointCount: 10, totalLength: 1643.0, smuAvgBelt: 12044, smuAvgSplice: 8426, width: 2200 },
+        joints: [
+          { joint: "J9", thickL: 33, thickR: 33, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 3500, brand: "SEM.", type: "UCG", length: 245.3, beltHours: 12983, spliceHours: 12983, spliceBrand: "SEM.", note: "Splice 2.35 m. Pre-Joint ITD+ITH 28/07/66" },
+          { joint: "J1", thickL: 33, thickR: 33, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 3500, brand: "SEM.", type: "UCG", length: 103.7, beltHours: 12595, spliceHours: 12595, spliceBrand: "UBI", note: "Splice 2.35 m. Respliced TKS 30/8/68" },
+          { joint: "J2", thickL: 33, thickR: 33, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 3500, brand: "SEM.", type: "UCG", length: 227.3, beltHours: 12595, spliceHours: 6287, spliceBrand: "UBI", note: "Splice 2.35 m. TKS 31/8/66" },
+          { joint: "TKS29/4/69", thickL: 32, thickR: 32, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 3500, brand: "SEM.", type: "XCG-M", length: 22.3, beltHours: 1, spliceHours: 1, spliceBrand: "TIP TOP", note: "Splice 2.35 m. TKS29/4/69" },
+          { joint: "TKS28/4/69", thickL: 32, thickR: 32, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 3500, brand: "CC", type: "DIN-X", length: 62, beltHours: 27192, spliceHours: 938, spliceBrand: "TIP TOP", note: "Splice 2.35 m. TKS28/4/69" },
+          { joint: "J4", thickL: 33, thickR: 33, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 3500, brand: "UBI", type: "XSR", length: 114.2, beltHours: 11147, spliceHours: 11147, spliceBrand: "UBI", note: "Splice 2.35 m. ITD 16/12/66" },
+          { joint: "J5", thickL: 22, thickR: 27, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 2500, brand: "CC", type: "Monster Hide", length: 128, beltHours: 10628, spliceHours: 10628, spliceBrand: "UBI", note: "Splice 2.35 m. TSI 22/1/67" },
+          { joint: "J7", thickL: 33, thickR: 33, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 3500, brand: "CC", type: "Monster Hide", length: 247.6, beltHours: 10628, spliceHours: 10628, spliceBrand: "UBI", note: "Splice 2.35 m. Prejoint TSI 17/1/66" },
+          { joint: "J6", thickL: 33, thickR: 33, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 3500, brand: "CC", type: "Monster Hide", length: 247.6, beltHours: 10628, spliceHours: 10628, spliceBrand: "UBI", note: "Splice 2.35 m. Prejoint ITD 17/1/66" },
+          { joint: "J8", thickL: 33, thickR: 33, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 3500, brand: "SEM", type: "UCG", length: 245.2, beltHours: 12983, spliceHours: 10628, spliceBrand: "UBI", note: "Splice 2.35 m. ITD 22/1/67" }
+        ]
+      },
+      "A7": {
+        summary: { line: "A7", update: "2026-05-12", jointCount: 7, totalLength: 1336.35, smuAvgBelt: 9582, smuAvgSplice: 7543, width: 2200 },
+        joints: [
+          { joint: "J1", thickL: 32, thickR: 32, hardL: 70, hardC: 70, hardR: 70, width: 2200, st: 3500, brand: "UBI", type: "XSR", length: 151.65, beltHours: 7467, spliceHours: 337, spliceBrand: "UBI", note: "Splice 2.35 m. TKS 7/10/68" },
+          { joint: "J2", thickL: 32, thickR: 32, hardL: 75, hardC: 77, hardR: 80, width: 2200, st: 3500, brand: "CC", type: "Monter Hide", length: 245.25, beltHours: 9681, spliceHours: 9681, spliceBrand: "UBI", note: "Splice 2.35 m. ITD 7/10/68" },
+          { joint: "J3", thickL: 32, thickR: 32, hardL: 75, hardC: 77, hardR: 80, width: 2200, st: 3500, brand: "CC", type: "Monter Hide", length: 193.6, beltHours: 9681, spliceHours: 9681, spliceBrand: "CC", note: "Splice 2.35 m. Prejoint ITD 28/2/67" },
+          { joint: "J4", thickL: 33, thickR: 33, hardL: 75, hardC: 76, hardR: 77, width: 2200, st: 3500, brand: "UBI", type: "XSR", length: 247.6, beltHours: 11498, spliceHours: 9681, spliceBrand: "CC", note: "Splice 2.35 m. ITD 12/3/67" },
+          { joint: "J5", thickL: 32, thickR: 32, hardL: 79, hardC: 78, hardR: 78, width: 2200, st: 3500, brand: "CC", type: "Monter Hide", length: 247.6, beltHours: 9583, spliceHours: 9583, spliceBrand: "UBI", note: "Splice 2.35 m. TSI 18/3/67" },
+          { joint: "J6", thickL: 31, thickR: 32, hardL: 80, hardC: 79, hardR: 79, width: 2200, st: 3500, brand: "CC", type: "Monter Hide", length: 198.3, beltHours: 9583, spliceHours: 9583, spliceBrand: "UBI", note: "Splice 2.35 m. Prejoint TKS 28/2/67" },
+          { joint: "J7", thickL: 32, thickR: 31, hardL: 78, hardC: 77, hardR: 76, width: 2200, st: 3500, brand: "CC", type: "Monter Hide", length: 52.35, beltHours: 9583, spliceHours: 4252, spliceBrand: "UBI", note: "Splice 2.35 m. Respliced TKS 10/2/68" }
+        ]
+      },
+      "A8": {
+        summary: { line: "A8", update: "2026-05-12", jointCount: 15, totalLength: 1988.1, smuAvgBelt: 11421, smuAvgSplice: 10477, width: 2200 },
+        joints: [
+          { joint: "J1", thickL: 32, thickR: 32, hardL: 75, hardC: 75, hardR: 76, width: 2200, st: 3500, brand: "CG", type: "Stacker Plus(X)", length: 186.3, beltHours: 16587, spliceHours: 16587, spliceBrand: "CG", note: "Splice 1.7 m. 29/10/65" },
+          { joint: "J2", thickL: 32, thickR: 32, hardL: 75, hardC: 76, hardR: 75, width: 2200, st: 3500, brand: "CG", type: "Stacker Plus(X)", length: 247.8, beltHours: 16587, spliceHours: 16587, spliceBrand: "CG", note: "Splice 1.7 m. 26/10/65" },
+          { joint: "J3", thickL: 32.7, thickR: 32.5, hardL: 76, hardC: 75, hardR: 76, width: 2200, st: 3500, brand: "CG", type: "Stacker Plus(X)", length: 249.5, beltHours: 16587, spliceHours: 16587, spliceBrand: "CG", note: "Splice 1.7 m. 25/10/65" },
+          { joint: "J4", thickL: 32, thickR: 32, hardL: 75, hardC: 76, hardR: 76, width: 2200, st: 3500, brand: "CG", type: "Stacker Plus(X)", length: 246.3, beltHours: 16587, spliceHours: 16587, spliceBrand: "CG", note: "Splice 1.7 m. 24/10/65" },
+          { joint: "J5", thickL: 32, thickR: 32, hardL: 75, hardC: 75, hardR: 76, width: 2200, st: 3500, brand: "CG", type: "Stacker Plus(X)", length: 21.3, beltHours: 16587, spliceHours: 16587, spliceBrand: "CG", note: "Splice 1.7 m. 24/10/65" },
+          { joint: "J5.1", thickL: 32, thickR: 32, hardL: 75, hardC: 75, hardR: 74, width: 2200, st: 3500, brand: "CC", type: "Monster Hide", length: 32.2, beltHours: 6900, spliceHours: 6900, spliceBrand: "UBI", note: "Splice 2.35 m. ITD VM3 31/8/67" },
+          { joint: "J5.2", thickL: 32, thickR: 32, hardL: 80, hardC: 81, hardR: 81, width: 2200, st: 3500, brand: "SEN", type: "UCG", length: 37.3, beltHours: 6900, spliceHours: 6900, spliceBrand: "UBI", note: "Splice 2.35 m. ITD 14/8/67" },
+          { joint: "J5.3", thickL: 32.7, thickR: 32.5, hardL: 75, hardC: 76, hardR: 75, width: 2200, st: 3500, brand: "CC", type: "Monster Hide", length: 58.3, beltHours: 6900, spliceHours: 2431, spliceBrand: "UBI", note: "Splice 2.35 m. Respliced TKS 20/5/68" },
+          { joint: "J5.4", thickL: 32, thickR: 32, hardL: 75, hardC: 76, hardR: 75, width: 2200, st: 3500, brand: "CC", type: "Monster Hide", length: 47.2, beltHours: 6900, spliceHours: 6900, spliceBrand: "UBI", note: "Splice 2.35 m. TKS 11/8/67" },
+          { joint: "J5.5", thickL: 32, thickR: 32, hardL: 75, hardC: 76, hardR: 74, width: 2200, st: 3500, brand: "UBI", type: "XSR", length: 249.5, beltHours: 6900, spliceHours: 6900, spliceBrand: "UBI", note: "Splice 2.35 m. TKS 10/8/67" },
+          { joint: "J5.6", thickL: 32.7, thickR: 32.5, hardL: 75, hardC: 74, hardR: 75, width: 2200, st: 3500, brand: "CC", type: "Monster Hide", length: 78.1, beltHours: 6900, spliceHours: 6900, spliceBrand: "UBI", note: "Splice 2.35 m. ITD 10/8/67" },
+          { joint: "J5.7", thickL: 32, thickR: 32, hardL: 75, hardC: 74, hardR: 75, width: 2200, st: 3500, brand: "CC", type: "Monster Hide", length: 35.9, beltHours: 6900, spliceHours: 6900, spliceBrand: "UBI", note: "Splice 2.35 m. ITD 8/8/67" },
+          { joint: "J5.8", thickL: 32.7, thickR: 32.5, hardL: 76, hardC: 74, hardR: 75, width: 2200, st: 3500, brand: "CC", type: "Monster Hide", length: 30.5, beltHours: 6900, spliceHours: 6900, spliceBrand: "UBI", note: "Splice 2.35 m. ITD 12/8/67" },
+          { joint: "J5.9", thickL: 32, thickR: 32, hardL: 76, hardC: 77, hardR: 77, width: 2200, st: 3500, brand: "CG", type: "Stacker Plus(X)", length: 227.3, beltHours: 16587, spliceHours: 6900, spliceBrand: "UBI", note: "Splice 2.35 m. TKS VMITH 31/8/67" },
+          { joint: "J6", thickL: 32, thickR: 32, hardL: 76, hardC: 77, hardR: 78, width: 2200, st: 3500, brand: "CG", type: "Stacker Plus(X)", length: 240.6, beltHours: 16587, spliceHours: 16587, spliceBrand: "CG", note: "Splice 1.7 m. Short 26/10/65" }
+        ]
+      }
+    };
+    // CSV datasets: A9-A16.
+    Object.assign(dashboardDatas, {
+      "A9": {
+        summary: { line: "A9", update: "2026-05-12", jointCount: 6, totalLength: 816.4, smuAvgBelt: 10224, smuAvgSplice: 3665, width: 1800.0 },
+        joints: [
+          { joint: "TKS21/2/69", thickL: 32, thickR: 31, hardL: 71, hardC: 69, hardR: 67, width: 1800, st: 3500, brand: "MST/H", type: "CC", length: 247.25, beltHours: 3135, spliceHours: 1, spliceBrand: "UBI", note: "???? Splice 1.65 m.TKS21/2/69 ???? All max+??????? ?????????" },
+          { joint: "J1", thickL: 31, thickR: 31, hardL: 66, hardC: 68, hardR: 70, width: 1800, st: 3500, brand: "MST/H", type: "CC", length: 13.25, beltHours: 3135, spliceHours: 3135, spliceBrand: "UBI", note: "???? Splice 2.65 m.( CTL 14/8/67 ) All-max" },
+          { joint: "TKS19/2/69", thickL: 29, thickR: 30, hardL: 69, hardC: 69, hardR: 71, width: 1800, st: 3500, brand: "UBI", type: "XSR", length: 232.6, beltHours: 14713, spliceHours: 13556, spliceBrand: "UBI", note: "???? Splice 1.65 m.TKS19/2/69 ???? All max+??????? ?????????" },
+          { joint: "TKS20/12/67", thickL: 26, thickR: 27, hardL: 67, hardC: 69, hardR: 70, width: 1800, st: 3500, brand: "CG", type: "X-Pluss", length: 49.8, beltHours: 11396, spliceHours: 5294, spliceBrand: "UBI", note: "???? Splice 2.35 m.TKS20/12/67?????????" },
+          { joint: "TKS16/2/69", thickL: 31, thickR: 31, hardL: 66, hardC: 68, hardR: 70, width: 1800, st: 3500, brand: "MST/H", type: "CC", length: 110, beltHours: 17567, spliceHours: 1, spliceBrand: "UBI", note: "???? Splice 1.65 m.TKS16/2/69 ???? All max+??????? ?????????" },
+          { joint: "TKS17/2/69", thickL: 32, thickR: 32, hardL: 73, hardC: 74, hardR: 73, width: 1800, st: 3500, brand: "UBI", type: "XSR", length: 163.5, beltHours: 11396, spliceHours: 1, spliceBrand: "UBI", note: "???? Splice 1.65 m.TKS17/2/69 ???? All max+??????? ?????????" }
+        ]
+      },
+      "A9.1": {
+        summary: { line: "A9.1", update: "2026-05-12", jointCount: 9, totalLength: 1194.9, smuAvgBelt: 7075, smuAvgSplice: 3157, width: 1800.0 },
+        joints: [
+          { joint: "J2", thickL: 28, thickR: 28, hardL: 73, hardC: 73, hardR: 72, width: 1800, st: 3500, brand: "UBI", type: "", length: 240, beltHours: 13274, spliceHours: 3615, spliceBrand: "UBI", note: "???? Splice 1.65 ?. ( TKS15/12/67 VM1.?????????)" },
+          { joint: "TKS22/5/68", thickL: 27, thickR: 27, hardL: 71, hardC: 70, hardR: 70, width: 1800, st: 3500, brand: "CC", type: "", length: 49.9, beltHours: 17891, spliceHours: 1162, spliceBrand: "UBI", note: "???? Splice 2.35 ?.(TKS 22/5/68 ???? All max ?????????)" },
+          { joint: "J6(11)", thickL: 27.4, thickR: 27.1, hardL: 69, hardC: 68, hardR: 69, width: 1800, st: 3500, brand: "CC", type: "", length: 236.6, beltHours: 17891, spliceHours: 3716, spliceBrand: "UBI", note: "???? Splice 1.65 ?.(TKS 3/3/66 VM3?????????) ?????????????????????" },
+          { joint: "J5", thickL: 27.1, thickR: 26.9, hardL: 71, hardC: 69, hardR: 71, width: 1800, st: 3500, brand: "CG", type: "", length: 48.3, beltHours: 8389, spliceHours: 3549, spliceBrand: "UBI", note: "???? Splice 1.65 ?.(TKS 29/5/67 VM3?????????) ?????????????????????" },
+          { joint: "TKS21/5/68", thickL: 28.7, thickR: 29, hardL: 75, hardC: 72, hardR: 74, width: 1800, st: 3500, brand: "UBI", type: "", length: 133.6, beltHours: 13350, spliceHours: 1162, spliceBrand: "UBI", note: "???? Splice 2.35 ?. (TKS21/5/68 ???? All Max ?????????)" },
+          { joint: "J2(J7)", thickL: 24.7, thickR: 24.5, hardL: 76, hardC: 77, hardR: 78, width: 1800, st: 3500, brand: "UBI", type: "", length: 196.2, beltHours: 3926, spliceHours: 3926, spliceBrand: "UBI", note: "???? Splice 1.65 ?. (TKS 11/6/67 VM1.?????????)" },
+          { joint: "J1", thickL: 24.7, thickR: 24.6, hardL: 80, hardC: 89, hardR: 80, width: 1800, st: 3500, brand: "UBI", type: "", length: 47.3, beltHours: 3926, spliceHours: 3926, spliceBrand: "UBI", note: "???? Splice 1.65 ?. (TKS10/6/67 VM1.?????????)" },
+          { joint: "J3", thickL: 31.4, thickR: 31.4, hardL: 74, hardC: 73, hardR: 74, width: 1800, st: 3500, brand: "UBI", type: "", length: 243, beltHours: 7099, spliceHours: 3615, spliceBrand: "UBI", note: "???? Splice 1.65 ?. (TKS Prejoint 1/5/67 VM1.?????????)" },
+          { joint: "J2", thickL: 32, thickR: 32, hardL: 70, hardC: 70, hardR: 71, width: 1800, st: 3500, brand: "UBI", type: "", length: 240, beltHours: 7099, spliceHours: 3615, spliceBrand: "UBI", note: "???? Splice 1.65 ?. (ITD 1/5/67 VM1.?????????)" }
+        ]
+      },
+      "A10": {
+        summary: { line: "A10", update: "2026-05-12", jointCount: 8, totalLength: 1273.3, smuAvgBelt: 8122, smuAvgSplice: 5288, width: 2200.0 },
+        joints: [
+          { joint: "J1", thickL: 33, thickR: 33, hardL: 71, hardC: 71, hardR: 69, width: 2200, st: 3500, brand: "CC", type: "DIN-X", length: 488, beltHours: 6459, spliceHours: 3042, spliceBrand: "UBI", note: "???? Splice 2.35 m.(TKS 11/4/68 VM.3 ??????)" },
+          { joint: "J3", thickL: 33.6, thickR: 33.6, hardL: 71, hardC: 72, hardR: 71, width: 2200, st: 3500, brand: "CC", type: "DIN-X", length: 0, beltHours: 8413, spliceHours: 6459, spliceBrand: "UBI", note: "???? Splice 2.35 m.(Extend ITD 15/7/67 VM.ITH ?????? )" },
+          { joint: "J2", thickL: 33, thickR: 33, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 3500, brand: "Monster Hide", type: "CC", length: 0, beltHours: 8413, spliceHours: 8413, spliceBrand: "SEM", note: "???? Splice 2.35 m.(Short ITD 14/12/67 VM.3 ?????? ???? )" },
+          { joint: "J10", thickL: 32.2, thickR: 32, hardL: 67, hardC: 67, hardR: 68, width: 2000, st: 3500, brand: "UBI", type: "XSR", length: 245.15, beltHours: 3042, spliceHours: 3042, spliceBrand: "UBI", note: "???? Splice 2.35 m.( ITD 11/4/68 VM.ITH(???????) ?????? )??? Splice UnionBelt" },
+          { joint: "J11", thickL: 32.2, thickR: 32, hardL: 67, hardC: 67, hardR: 68, width: 2000, st: 3500, brand: "UBI", type: "XSR", length: 247.5, beltHours: 8233, spliceHours: 5644, spliceBrand: "UBI", note: "???? Splice 2.35 m.(TKS Resplice 16/11/67 VM3 ??????)??? Splice UnionBelt" },
+          { joint: "J12", thickL: 32, thickR: 32, hardL: 71, hardC: 72, hardR: 71, width: 2000, st: 3500, brand: "UBI", type: "XSR", length: 101.35, beltHours: 8351, spliceHours: 3863, spliceBrand: "UBI", note: "???? Splice 2.35 m ( ITD 25/2/68 VM.ITH ?????? )" },
+          { joint: "J13", thickL: 31, thickR: 30, hardL: 70, hardC: 71, hardR: 70, width: 2000, st: 3500, brand: "UBI", type: "XSR", length: 105, beltHours: 3863, spliceHours: 3863, spliceBrand: "UBI", note: "???? Splice 2.35 m.(TKS 25/2/68 VM.3 ??????)" },
+          { joint: "J14", thickL: 33, thickR: 33, hardL: 65, hardC: 65, hardR: 65, width: 2000, st: 3500, brand: "CC", type: "Monster Hide", length: 86.3, beltHours: 18202, spliceHours: 7975, spliceBrand: "UBI", note: "???? Splice 2.35 m.(TKS 6/6/67 VM 3 ??????)??? Splice UnionBelt" }
+        ]
+      },
+      "A11": {
+        summary: { line: "A11", update: "2026-05-12", jointCount: 8, totalLength: 1597.2, smuAvgBelt: 7186, smuAvgSplice: 7186, width: 2000.0 },
+        joints: [
+          { joint: "J1", thickL: 33, thickR: 33, hardL: 65, hardC: 65, hardR: 65, width: 2000, st: 3500, brand: "UBI", type: "XSR", length: 247.65, beltHours: 7186, spliceHours: 7186, spliceBrand: "UBI", note: "???? Splice 2.35 m.(TKS Prejoint 3/7/67 VM.3 ?????????)" },
+          { joint: "J2", thickL: 33.6, thickR: 33.6, hardL: 65, hardC: 65, hardR: 65, width: 2000, st: 3500, brand: "UBI", type: "XSR", length: 212.65, beltHours: 7186, spliceHours: 7186, spliceBrand: "UBI", note: "???? Splice 2.35 m.(TKS Prejoint 17/6/67 VM.3 ?????????)" },
+          { joint: "J3", thickL: 32.2, thickR: 32, hardL: 65, hardC: 65, hardR: 65, width: 2000, st: 3500, brand: "UBI", type: "XSR", length: 118.65, beltHours: 7186, spliceHours: 7186, spliceBrand: "UBI", note: "???? Splice 2.35 m.(TKS Fianl Joint 27/7/67 VM.3 ?????????)" },
+          { joint: "J4", thickL: 32.2, thickR: 32, hardL: 65, hardC: 65, hardR: 65, width: 2000, st: 3500, brand: "UBI", type: "XSR", length: 247.65, beltHours: 7186, spliceHours: 7186, spliceBrand: "UBI", note: "???? Splice 2.35 m.(TKS Prejoint 2/7/67 VM.3 ?????????)" },
+          { joint: "J5", thickL: 32, thickR: 32, hardL: 65, hardC: 65, hardR: 65, width: 2000, st: 3500, brand: "UBI", type: "XSR", length: 247.65, beltHours: 7186, spliceHours: 7186, spliceBrand: "UBI", note: "???? Splice 2.35 m.(TKS Prejoint 1/7/67 VM.3 ?????????)" },
+          { joint: "J6", thickL: 31, thickR: 30, hardL: 65, hardC: 65, hardR: 65, width: 2000, st: 3500, brand: "UBI", type: "XSR", length: 247.65, beltHours: 7186, spliceHours: 7186, spliceBrand: "UBI", note: "???? Splice 2.35 m.(TSI Prejoint 22/7/67 VM.3 ?????????)" },
+          { joint: "J7", thickL: 33, thickR: 33, hardL: 65, hardC: 65, hardR: 65, width: 2000, st: 3500, brand: "UBI", type: "XSR", length: 247.65, beltHours: 7186, spliceHours: 7186, spliceBrand: "UBI", note: "???? Splice 2.35 m.(TKS Prejoint 16/6/67 VM.3 ?????????)" },
+          { joint: "J8", thickL: 33, thickR: 33, hardL: 65, hardC: 65, hardR: 65, width: 2000, st: 3500, brand: "UBI", type: "XSR", length: 27.65, beltHours: 7186, spliceHours: 7186, spliceBrand: "UBI", note: "???? Splice 2.35 m.(TKS Prejoint 23/7/67 VM.3 ?????????)" }
+        ]
+      },
+      "A12": {
+        summary: { line: "A12", update: "2026-05-12", jointCount: 4, totalLength: 528.5, smuAvgBelt: 12514, smuAvgSplice: 176, width: 1800.0 },
+        joints: [
+          { joint: "J1", thickL: 33, thickR: 33, hardL: 65, hardC: 65, hardR: 65, width: 1800, st: 3500, brand: "SEM", type: "UCG", length: 80, beltHours: 114, spliceHours: 114, spliceBrand: "ITH", note: "Splice 1.65 m.(TKS22/10/68 (???????) ??????)" },
+          { joint: "J1.1", thickL: 30, thickR: 27, hardL: 74, hardC: 72, hardR: 70, width: 1800, st: 3500, brand: "UBI", type: "XSR", length: 180.75, beltHours: 12966, spliceHours: 114, spliceBrand: "ITH", note: "Splice 1.65 m.(ITD22/10/68 (All max) ??????)" },
+          { joint: "J2", thickL: 30, thickR: 30, hardL: 75, hardC: 72, hardR: 70, width: 1800, st: 3500, brand: "UBI", type: "XSR", length: 245.35, beltHours: 12514, spliceHours: 176, spliceBrand: "UBI", note: "???? Splice 1.65 m.(Resplice18/10/68 TKS ???? All max ??????)" },
+          { joint: "J3", thickL: 30, thickR: 30, hardL: 70, hardC: 72, hardR: 74, width: 1800, st: 3500, brand: "UBI", type: "XSR", length: 22.4, beltHours: 12514, spliceHours: 1, spliceBrand: "UBI", note: "???? Splice 2.35 m.(ITD 27/11/68 ??????? ??????)" }
+        ]
+      },
+      "A13": {
+        summary: { line: "A13", update: "2026-05-12", jointCount: 8, totalLength: 1341.1, smuAvgBelt: 11274, smuAvgSplice: 4013, width: 1800.0 },
+        joints: [
+          { joint: "J1", thickL: 31, thickR: 31, hardL: 77, hardC: 76, hardR: 75, width: 1800, st: 3500, brand: "UBI", type: "XSR", length: 248.6, beltHours: 10030, spliceHours: 10030, spliceBrand: "UBI", note: "???? Splice 2.35 m.(Pre Jiont TKS9/12/66 VM.ITH(???????) ?????????)" },
+          { joint: "Pre-TKS4/2/69", thickL: 33, thickR: 33, hardL: 74, hardC: 71, hardR: 70, width: 1800, st: 3500, brand: "UBI", type: "XSR", length: 59, beltHours: 16250, spliceHours: 1, spliceBrand: "Jack", note: "???? Splice 2.35 m.(Pre Jiont TKS4/2/69 (???????+All max) ?????????) ???????" },
+          { joint: "Pre-TKS4/2/70", thickL: 31, thickR: 31, hardL: 77, hardC: 76, hardR: 75, width: 1800, st: 3500, brand: "UBI", type: "XSR", length: 228, beltHours: 10030, spliceHours: 1, spliceBrand: "Jack", note: "???? Splice 2.35 m.(Pre Jiont TKS9/2/69 (???????+All max) ?????????) ???????" },
+          { joint: "J4", thickL: 31, thickR: 31, hardL: 74, hardC: 74, hardR: 75, width: 1800, st: 3500, brand: "UBI", type: "XSR", length: 248.6, beltHours: 10030, spliceHours: 10030, spliceBrand: "UBI", note: "???? Splice 2.35 m.(Final ITD+ITH18/12/66 VM.3 ??????)" },
+          { joint: "Final TKS12/2/69", thickL: 31, thickR: 32, hardL: 78, hardC: 77, hardR: 77, width: 1800, st: 3500, brand: "UBI", type: "XSR", length: 248.6, beltHours: 10030, spliceHours: 1, spliceBrand: "Jack", note: "???? Splice 2.35 m.(Final TKS12/2/69 (???????+All max) ?????????)???????" },
+          { joint: "J2.1", thickL: 29, thickR: 29, hardL: 75, hardC: 75, hardR: 75, width: 1800, st: 3500, brand: "UBI", type: "XSR", length: 18.8, beltHours: 14640, spliceHours: 10030, spliceBrand: "UBI", note: "???? Splice 1.65 m.( ITD7/5/67 VM.3 ??????) Extend ?????? A12????" },
+          { joint: "J5", thickL: 28, thickR: 29, hardL: 77, hardC: 77, hardR: 78, width: 1800, st: 3500, brand: "CG", type: "X-Pluss", length: 42.6, beltHours: 14640, spliceHours: 14640, spliceBrand: "UBI", note: "??? 42.6 m. ???? Splice 1.65 m.(12/10/65)??? Splice CC Germany" },
+          { joint: "TKS13/2/69", thickL: 32, thickR: 31, hardL: 75, hardC: 75, hardR: 75, width: 1800, st: 3500, brand: "UBI", type: "XSR", length: 246.9, beltHours: 10030, spliceHours: 7971, spliceBrand: "Jack", note: "???? Splice 2.35 m.(Resplice TKS13/2/69 (???????+All max) ?????????)???????" }
+        ]
+      },
+      "A14": {
+        summary: { line: "A14", update: "2026-05-12", jointCount: 7, totalLength: 1349.6, smuAvgBelt: 6361, smuAvgSplice: 3986, width: 1800.0 },
+        joints: [
+          { joint: "J1", thickL: 33, thickR: 33, hardL: 74, hardC: 71, hardR: 70, width: 1800, st: 3500, brand: "UBI", type: "XSR", length: 188.7, beltHours: 6221, spliceHours: 1, spliceBrand: "UBI", note: "???? Splice 2.35 m.(Short TKS 3/2/69 (???????) ?????????)" },
+          { joint: "J2", thickL: 33, thickR: 33, hardL: 73, hardC: 73, hardR: 73, width: 1800, st: 3500, brand: "UBI", type: "XSR", length: 249.35, beltHours: 6221, spliceHours: 6221, spliceBrand: "UBI", note: "???? Splice 1.65 m.(Pre Jiont TKS 08/5/67 VM.ITH(???????) ?????????)" },
+          { joint: "J3", thickL: 29, thickR: 29, hardL: 74, hardC: 74, hardR: 75, width: 1800, st: 3500, brand: "CG", type: "X-Pluss", length: 20.35, beltHours: 8741, spliceHours: 6221, spliceBrand: "UBI", note: "???? Splice 1.65 m.(Pre Jiont ITD 10/5/67 VM.1 ?????????)" },
+          { joint: "J3.1", thickL: 32, thickR: 32, hardL: 70, hardC: 71, hardR: 73, width: 1800, st: 3500, brand: "SEM.", type: "UCG", length: 247.65, beltHours: 726, spliceHours: 726, spliceBrand: "UBI", note: "???? Splice 2.35 m.(TKS 17/8/68 V(???????) (??????)" },
+          { joint: "J4", thickL: 33, thickR: 33, hardL: 73, hardC: 75, hardR: 77, width: 1800, st: 3500, brand: "UBI", type: "XSR", length: 100.35, beltHours: 10985, spliceHours: 726, spliceBrand: "UBI", note: "???? Splice 2.35 m.(TKS 18/8/68 ??????? (??????) ?????????? A12" },
+          { joint: "J6", thickL: 32, thickR: 33, hardL: 70, hardC: 73, hardR: 76, width: 1800, st: 3500, brand: "UBI", type: "XSR", length: 249.35, beltHours: 6221, spliceHours: 6221, spliceBrand: "UBI", note: "???? Splice 1.65 m.(Pre Jiont TKS 10/5/67 VM.ITH(???????) ?????????)" },
+          { joint: "J5", thickL: 32, thickR: 33, hardL: 74, hardC: 73, hardR: 72, width: 1800, st: 3500, brand: "UBI", type: "XSR", length: 249.35, beltHours: 6221, spliceHours: 6221, spliceBrand: "UBI", note: "???? Splice 1.65 m.(Pre Jiont TKS 09/5/67 VM.3) ?????????)" }
+        ]
+      },
+      "A16": {
+        summary: { line: "A16", update: "2026-05-12", jointCount: 2, totalLength: 384.65, smuAvgBelt: 1, smuAvgSplice: 1, width: 2000.0 },
+        joints: [
+          { joint: "JTKS26/10/68 Final", thickL: 34, thickR: 34, hardL: 65, hardC: 65, hardR: 65, width: 2000, st: 3500, brand: "UBI", type: "XSR", length: 247.65, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "???? Splice 2.35 m.(TKS26/10/68 ????All max ?????????)" },
+          { joint: "JTKS25/8/68", thickL: 34, thickR: 34, hardL: 65, hardC: 65, hardR: 65, width: 2000, st: 3500, brand: "UBI", type: "XSR", length: 137, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "???? Splice 2.35 m.(TKS25/8/68(???????) ?????????)" }
+        ]
+      }
+    });
+    // End CSV datasets: A9-A16.
+
+    const equipmentDatas = {
+      "CR J": {
+        summary: { line: "CR J", update: "2026-05-12", jointCount: 1, totalLength: 50, smuAvgBelt: 1, smuAvgSplice: 1, width: 2400 },
+        joints: [
+          { joint: "Cr-J", thickL: 37, thickR: 37, hardL: 65, hardC: 65, hardR: 65, width: 2400, st: 2000, brand: "UBI", type: "XSR", length: 50, beltHours: 1, spliceHours: 1, spliceBrand: "UBI", note: "???? Splice 1.35 m.( TKS28/10/2568 ???? All Max ?????????)/UBI-ST2000xBW2400x20+10/SN150768-01" }
+        ]
+      },
+      "CR K": {
+        summary: { line: "CR K", update: "2026-05-12", jointCount: 1, totalLength: 50, smuAvgBelt: 13913, smuAvgSplice: 13913, width: 2400 },
+        joints: [
+          { joint: "CR-K", thickL: 33, thickR: 33, hardL: 65, hardC: 65, hardR: 65, width: 2400, st: 2000, brand: "UBI", type: "XSR", length: 50, beltHours: 13913, spliceHours: 13913, spliceBrand: "UBI", note: "???? Splice1 m.(TKS 6/11/2565 )" }
+        ]
+      },
+      "CR C": {
+        summary: { line: "CR C", update: "2026-05-12", jointCount: 1, totalLength: 44.5, smuAvgBelt: 5554, smuAvgSplice: 5554, width: 2200 },
+        joints: [
+          { joint: "Cr-C", thickL: 31, thickR: 31, hardL: 74, hardC: 72, hardR: 71, width: 2200, st: 3500, brand: "UBI", type: "XSR", length: 44.5, beltHours: 5554, spliceHours: 5554, spliceBrand: "UBI", note: "???? Splice 1 m.(18/5/2567) S/N150267" }
+        ]
+      },
+      "CR I": {
+        summary: { line: "CR I", update: "2026-05-12", jointCount: 1, totalLength: 50, smuAvgBelt: 17546, smuAvgSplice: 17546, width: 2200 },
+        joints: [
+          { joint: "Cr-I", thickL: 33, thickR: 33, hardL: 65, hardC: 65, hardR: 65, width: 2200, st: 2000, brand: "UBI", type: "XSR", length: 50, beltHours: 17546, spliceHours: 17546, spliceBrand: "UBI", note: "???? Splice 1. m.( 10/12/2566)" }
+        ]
+      },
+      "SPD A": {
+        summary: { line: "SPD A", update: "2026-05-12", jointCount: 0, totalLength: 0, smuAvgBelt: 0, smuAvgSplice: 0, width: 0 },
+        joints: []
+      },
+      "SPD B": {
+        summary: { line: "SPD B", update: "2026-05-12", jointCount: 0, totalLength: 0, smuAvgBelt: 0, smuAvgSplice: 0, width: 0 },
+        joints: []
+      },
+      "BWE1": {
+        summary: { line: "BWE1", update: "2026-05-12", jointCount: 0, totalLength: 0, smuAvgBelt: 0, smuAvgSplice: 0, width: 0 },
+        joints: []
+      },
+      "BWE2": {
+        summary: { line: "BWE2", update: "2026-05-12", jointCount: 0, totalLength: 0, smuAvgBelt: 0, smuAvgSplice: 0, width: 0 },
+        joints: []
+      },
+      "BW1": {
+        summary: { line: "BW1", update: "2026-05-12", jointCount: 0, totalLength: 0, smuAvgBelt: 0, smuAvgSplice: 0, width: 0 },
+        joints: []
+      },
+      "BW2": {
+        summary: { line: "BW2", update: "2026-05-12", jointCount: 0, totalLength: 0, smuAvgBelt: 0, smuAvgSplice: 0, width: 0 },
+        joints: []
+      },
+      "BW3": {
+        summary: { line: "BW3", update: "2026-05-12", jointCount: 0, totalLength: 0, smuAvgBelt: 0, smuAvgSplice: 0, width: 0 },
+        joints: []
+      },
+      "CR A": {
+        summary: { line: "CR A", update: "2026-05-12", jointCount: 0, totalLength: 0, smuAvgBelt: 0, smuAvgSplice: 0, width: 0 },
+        joints: []
+      },
+      "CR B": {
+        summary: { line: "CR B", update: "2026-05-12", jointCount: 0, totalLength: 0, smuAvgBelt: 0, smuAvgSplice: 0, width: 0 },
+        joints: []
+      },
+      "CR N": {
+        summary: { line: "CR N", update: "2026-05-12", jointCount: 0, totalLength: 0, smuAvgBelt: 0, smuAvgSplice: 0, width: 0 },
+        joints: []
+      },
+      "CR L": {
+        summary: { line: "CR L", update: "2026-05-12", jointCount: 0, totalLength: 0, smuAvgBelt: 0, smuAvgSplice: 0, width: 0 },
+        joints: []
+      },
+      "CR D": {
+        summary: { line: "CR D", update: "2026-05-12", jointCount: 0, totalLength: 0, smuAvgBelt: 0, smuAvgSplice: 0, width: 0 },
+        joints: []
+      }
+    };
+
+    let currentSection = "lineA";
+    let dashboardData = dashboardDatas["A1.1"];
+    let currentView = "summary";
+    let lastUpdatedText = "Last update\n12/5/2026";
+    let dataSourceText = DASHBOARD_API_URL ? "Google Sheet data" : "Local fallback data";
+
+    const fmt = new Intl.NumberFormat("en-US", { maximumFractionDigits: 1 });
+    const fmt2 = new Intl.NumberFormat("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 2 });
+    const avgHardness = item => (item.hardL + item.hardC + item.hardR) / 3;
+    const minThickness = item => Math.min(item.thickL, item.thickR);
+    const spliceAgeHours = item => Number(item.spliceHours || 0);
+    const jointStatus = item => {
+      if (minThickness(item) <= 27 || avgHardness(item) >= 80 || spliceAgeHours(item) >= 25000) return "alarm";
+      if (minThickness(item) >= 28 && minThickness(item) < 29) return "monitor";
+      return "normal";
+    };
+    const thicknessClass = value => {
+      if (value <= 27) return "fail";
+      if (value >= 28 && value < 29) return "caution";
+      return "ok";
+    };
+    const isWarning = item => jointStatus(item) !== "normal";
+
+    function setText(selector, text) {
+      const el = document.querySelector(selector);
+      if (el) el.textContent = text;
+    }
+
+    function setAuthMessage(message) {
+      setText(".auth-message", message);
+    }
+
+    function setDataSourceStatus(message) {
+      dataSourceText = message;
+      setText(".data-source-status", message);
+    }
+
+    function equipmentKeyFromJoint(joint) {
+      const normalized = String(joint || "").toUpperCase().replace(/\./g, "").replace(/-/g, " ").replace(/\s+/g, " ").trim();
+      const allowed = ["CR J", "CR K", "CR C", "CR I", "CR A", "CR B", "CR N", "CR L", "CR D"];
+      return allowed.includes(normalized) ? normalized : "";
+    }
+
+    function recalculateLineSummary(data) {
+      if (!data || !data.summary || !Array.isArray(data.joints)) return;
+      const average = values => values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0;
+      const round1 = value => Math.round(value * 10) / 10;
+      const beltHours = data.joints.map(item => item.beltHours).filter(value => value > 0);
+      const spliceHours = data.joints.map(item => item.spliceHours).filter(value => value > 0);
+      const firstWidth = data.joints.find(item => item.width > 0);
+      data.summary.jointCount = data.joints.length;
+      data.summary.totalLength = round1(data.joints.reduce((sum, item) => sum + item.length, 0));
+      data.summary.smuAvgBelt = round1(average(beltHours));
+      data.summary.smuAvgSplice = round1(average(spliceHours));
+      data.summary.width = firstWidth ? firstWidth.width : 0;
+    }
+
+    function moveCrJointsToEquipment() {
+      Object.values(dashboardDatas).forEach(data => {
+        if (!data || !Array.isArray(data.joints)) return;
+        const lineJoints = [];
+
+        data.joints.forEach(item => {
+          const equipmentKey = equipmentKeyFromJoint(item.joint);
+          if (!equipmentKey) {
+            lineJoints.push(item);
+            return;
+          }
+
+          equipmentDatas[equipmentKey] = {
+            summary: {
+              line: equipmentKey,
+              update: data.summary.update,
+              jointCount: 1,
+              totalLength: item.length,
+              smuAvgBelt: item.beltHours,
+              smuAvgSplice: item.spliceHours,
+              width: item.width,
+            },
+            joints: [item],
+          };
+        });
+
+        data.joints = lineJoints;
+        recalculateLineSummary(data);
+      });
+    }
+
+    function mergeRemoteData(target, source) {
+      if (!source) return;
+      Object.entries(source).forEach(([key, value]) => {
+        const hasRows = Array.isArray(value?.joints) && value.joints.length > 0;
+        const hasExistingRows = Array.isArray(target[key]?.joints) && target[key].joints.length > 0;
+        if (hasRows || !hasExistingRows) target[key] = value;
+      });
+    }
+
+    function applyRemotePayload(payload) {
+      mergeRemoteData(dashboardDatas, payload.lineA);
+      mergeRemoteData(equipmentDatas, payload.equipment);
+      if (payload.updatedAt) lastUpdatedText = `Last update\n${payload.updatedAt}`;
+      moveCrJointsToEquipment();
+
+      const dataSource = currentSection === "equipment" ? equipmentDatas : dashboardDatas;
+      const activeLine = dashboardData?.summary?.line;
+      dashboardData = dataSource[activeLine] || dataSource[currentSection === "equipment" ? "CR J" : "A1.1"];
+      setDataSourceStatus("Google Sheet data");
+    }
+
+    async function loadDashboardData(password) {
+      if (!DASHBOARD_API_URL) {
+        if (password !== LOCAL_PREVIEW_PASSWORD) throw new Error("รหัสผ่านไม่ถูกต้อง");
+        setDataSourceStatus("Local fallback data - waiting for Apps Script URL");
+        return;
+      }
+
+      const url = new URL(DASHBOARD_API_URL);
+      url.searchParams.set("password", password);
+      url.searchParams.set("_", Date.now().toString());
+      const response = await fetch(url.toString(), { cache: "no-store" });
+      const payload = await response.json();
+      if (!response.ok || !payload.ok) throw new Error(payload.message || "ไม่สามารถโหลดข้อมูลได้");
+      applyRemotePayload(payload);
+    }
+
+    function lockDashboard() {
+      sessionStorage.removeItem(AUTH_STORAGE_KEY);
+      document.body.classList.add("locked");
+      const input = document.querySelector("#dashboard-password");
+      if (input) {
+        input.value = "";
+        setTimeout(() => input.focus(), 50);
+      }
+      setAuthMessage("");
+    }
+
+    async function unlockDashboard(password) {
+      setAuthMessage("กำลังตรวจรหัสผ่าน...");
+      await loadDashboardData(password);
+      sessionStorage.setItem(AUTH_STORAGE_KEY, password);
+      document.body.classList.remove("locked");
+      setAuthMessage("");
+      rebuildAll();
+    }
+
+    async function refreshDashboard() {
+      const password = sessionStorage.getItem(AUTH_STORAGE_KEY);
+      if (!password) {
+        lockDashboard();
+        return;
+      }
+      const previousText = dataSourceText;
+      setDataSourceStatus("Refreshing...");
+      try {
+        await loadDashboardData(password);
+        rebuildAll();
+      } catch (error) {
+        setDataSourceStatus(previousText);
+        alert(error.message || "Refresh failed");
+      }
+    }
+
+    function switchView(view) {
+      currentView = view;
+      document.body.classList.toggle("summary-mode", view === "summary");
+      document.body.classList.toggle("detail-mode", view === "detail");
+      rebuildAll();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function allLineEntries() {
+      return Object.values(dashboardDatas).filter(data => data?.summary && Array.isArray(data.joints));
+    }
+
+    function allEquipmentEntries() {
+      return Object.values(equipmentDatas).filter(data => data?.summary && Array.isArray(data.joints));
+    }
+
+    const lineOrder = ["A1.1", "A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A9.1", "A10", "A11", "A12", "A13", "A14", "A16"];
+    const equipmentOrder = ["CR J", "CR K", "CR C", "CR I", "CR A", "CR B", "CR N", "CR L", "CR D", "SPD A", "SPD B", "BWE1", "BWE2", "BW1", "BW2", "BW3"];
+
+    function orderIndex(list, value) {
+      const index = list.indexOf(value);
+      return index === -1 ? 999 : index;
+    }
+
+    function jointOrderValue(joint) {
+      const match = String(joint || "").match(/J\s*(\d+(?:\.\d+)?)/i);
+      if (match) return Number(match[1]);
+      return 999;
+    }
+
+    function displayOrder(a, b) {
+      const aLine = orderIndex(lineOrder, a.line);
+      const bLine = orderIndex(lineOrder, b.line);
+      if (aLine !== bLine) return aLine - bLine;
+
+      const aEquipment = orderIndex(equipmentOrder, a.line);
+      const bEquipment = orderIndex(equipmentOrder, b.line);
+      if (aEquipment !== bEquipment) return aEquipment - bEquipment;
+
+      return jointOrderValue(a.joint) - jointOrderValue(b.joint) ||
+        String(a.joint || "").localeCompare(String(b.joint || ""), undefined, { numeric: true });
+    }
+
+    function rebuildExecutiveSummary() {
+      const lines = allLineEntries();
+      const equipment = allEquipmentEntries();
+      const lineJoints = lines.flatMap(line => line.joints.map(item => ({ ...item, line: line.summary.line })));
+      const equipmentJoints = equipment.flatMap(line => line.joints.map(item => ({ ...item, line: line.summary.line })));
+      const allJoints = [...lineJoints, ...equipmentJoints];
+      const alarms = allJoints.filter(item => jointStatus(item) === "alarm");
+      const monitors = allJoints.filter(item => jointStatus(item) === "monitor");
+      const totalLength = lines.reduce((sum, line) => sum + Number(line.summary.totalLength || 0), 0);
+      const activeLineCount = lines.filter(line => line.joints.length).length;
+      const activeEquipmentCount = equipment.filter(line => line.joints.length).length;
+      const overallStatus = alarms.length ? "ALARM" : monitors.length ? "MONITOR" : "NORMAL";
+
+      setText('[data-summary="lines"]', fmt.format(activeLineCount));
+      setText('[data-summary="joints"]', fmt.format(allJoints.length));
+      setText('[data-summary="length"]', fmt.format(totalLength));
+      setText('[data-summary="alarms"]', fmt.format(alarms.length));
+      setText('[data-summary="monitors"]', fmt.format(monitors.length));
+      setText('[data-summary="equipment"]', fmt.format(activeEquipmentCount));
+
+      const statusValue = document.querySelector(".summary-status-value");
+      if (statusValue) {
+        statusValue.textContent = overallStatus;
+        statusValue.classList.toggle("alarm", overallStatus === "ALARM");
+        statusValue.classList.toggle("warn", overallStatus === "MONITOR");
+      }
+      setText(".summary-status-note", alarms.length
+        ? `${alarms.length} alarm point(s) need attention`
+        : monitors.length
+          ? `${monitors.length} monitor point(s) should be followed`
+          : "No active alarms");
+
+      const priority = [...allJoints]
+        .filter(item => jointStatus(item) !== "normal")
+        .sort((a, b) => {
+          const order = displayOrder(a, b);
+          if (order) return order;
+          const rank = status => status === "alarm" ? 0 : status === "monitor" ? 1 : 2;
+          return rank(jointStatus(a)) - rank(jointStatus(b)) ||
+            minThickness(a) - minThickness(b);
+        })
+        .slice(0, 8);
+
+      const summaryList = document.querySelector(".summary-list");
+      if (summaryList) {
+        summaryList.innerHTML = priority.length ? priority.map(item => {
+          const status = jointStatus(item);
+          const label = status === "alarm" ? "ALARM" : "MONITOR";
+          const reason = status === "alarm"
+            ? `Min ${fmt2.format(minThickness(item))} mm · Hard ${fmt2.format(avgHardness(item))} A · Splice ${fmt.format(spliceAgeHours(item))} Hr`
+            : `Min ${fmt2.format(minThickness(item))} mm`;
+          return `
+            <div class="risk-item">
+              <span>${escapeHtml(item.line)}</span>
+              <span>${escapeHtml(item.joint)} · ${reason}</span>
+              <span class="pill ${status === "alarm" ? "alarm" : "warn"}">${label}</span>
+            </div>`;
+        }).join("") : `<div class="risk-item"><span>OK</span><span>No alarm or monitor points</span><span class="pill">NORMAL</span></div>`;
+      }
+
+      const summaryTableBody = document.querySelector(".summary-table tbody");
+      if (summaryTableBody) {
+        summaryTableBody.innerHTML = lines
+          .filter(line => line.joints.length)
+          .sort((a, b) => orderIndex(lineOrder, a.summary.line) - orderIndex(lineOrder, b.summary.line))
+          .map(line => {
+            const lineAlarms = line.joints.filter(item => jointStatus(item) === "alarm").length;
+            const lineMonitors = line.joints.filter(item => jointStatus(item) === "monitor").length;
+            const status = lineAlarms ? "ALARM" : lineMonitors ? "MONITOR" : "NORMAL";
+            return `
+              <tr>
+                <td>${escapeHtml(line.summary.line)}</td>
+                <td>${fmt.format(line.joints.length)}</td>
+                <td>${fmt.format(line.summary.totalLength)}</td>
+                <td>${fmt.format(lineAlarms)}</td>
+                <td>${fmt.format(lineMonitors)}</td>
+                <td><span class="pill ${status === "ALARM" ? "alarm" : status === "MONITOR" ? "warn" : ""}">${status}</span></td>
+              </tr>`;
+          }).join("");
+      }
+
+      const equipmentTableBody = document.querySelector(".equipment-summary-table tbody");
+      if (equipmentTableBody) {
+        equipmentTableBody.innerHTML = equipment
+          .filter(line => line.joints.length)
+          .sort((a, b) => orderIndex(equipmentOrder, a.summary.line) - orderIndex(equipmentOrder, b.summary.line))
+          .map(line => {
+            const lineAlarms = line.joints.filter(item => jointStatus(item) === "alarm").length;
+            const lineMonitors = line.joints.filter(item => jointStatus(item) === "monitor").length;
+            const status = lineAlarms ? "ALARM" : lineMonitors ? "MONITOR" : "NORMAL";
+            const avgBeltHours = line.joints.length
+              ? line.joints.reduce((sum, item) => sum + Number(item.beltHours || 0), 0) / line.joints.length
+              : 0;
+            return `
+              <tr>
+                <td>${escapeHtml(line.summary.line)}</td>
+                <td>${fmt.format(line.joints.length)}</td>
+                <td>${fmt.format(line.summary.width)}</td>
+                <td>${fmt.format(avgBeltHours)}</td>
+                <td><span class="pill ${status === "ALARM" ? "alarm" : status === "MONITOR" ? "warn" : ""}">${status}</span></td>
+              </tr>`;
+          }).join("") || `<tr><td colspan="5">No equipment data</td></tr>`;
+      }
+    }
+
+    function rebuildTabs() {
+      const isEquipment = currentSection === "equipment";
+      const dataSource = isEquipment ? equipmentDatas : dashboardDatas;
+      const lineLinks = isEquipment
+        ? ["CR J", "CR K", "CR C", "CR I", "CR A", "CR B", "CR N", "CR L", "CR D", "SPD A", "SPD B", "BWE1", "BWE2", "BW1", "BW2", "BW3"]
+        : ["A1.1", "A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A9.1", "A10", "A11", "A12", "A13", "A14", "A16"];
+
+      document.querySelectorAll(".tab").forEach(tab => {
+        const section = tab.dataset.section;
+        tab.classList.toggle("active", Boolean(section) && section === currentSection);
+        if (!section) return;
+        tab.onclick = () => {
+          currentSection = section;
+          dashboardData = section === "equipment" ? equipmentDatas["CR J"] : dashboardDatas["A1.1"];
+          rebuildAll();
+        };
+      });
+
+      document.querySelectorAll('[data-action="print"]').forEach(button => {
+        button.onclick = () => window.print();
+      });
+
+      const renderLink = line => `
+        <a class="line-tab ${line === dashboardData.summary.line ? "active" : ""}" href="#${line}" data-line="${line}" aria-label="Open ${isEquipment ? "equipment" : "line"} ${line}">
+          <span class="status-dot"></span>${line}
+        </a>`;
+      document.querySelector(".line-tabs").innerHTML = lineLinks.map(renderLink).join("");
+      document.querySelectorAll(".line-tab").forEach(tab => {
+        tab.addEventListener("click", event => {
+          const line = tab.dataset.line;
+          if (!dataSource[line]) return;
+          event.preventDefault();
+          dashboardData = dataSource[line];
+          rebuildAll();
+        });
+      });
+      setText(".subtitle", isEquipment ? "Equipment - Mapping 2569" : "Line A - Mapping 2569");
+      document.querySelector(".hint").innerHTML = `<span class="status-dot"></span> Connected : ${isEquipment ? "Equipment" : "Line A"} - ${dashboardData.summary.line} - ${dashboardData.joints.map(item => item.joint).join(", ")}`;
+      setText(".last-update", lastUpdatedText);
+      setText(".data-source-status", dataSourceText);
+    }
+
+    function rebuildMetrics() {
+      const values = document.querySelectorAll(".metric-value");
+      const labels = document.querySelectorAll(".metric-label");
+      const alarmCount = dashboardData.joints.filter(item => jointStatus(item) === "alarm").length;
+      const monitorCount = dashboardData.joints.filter(item => jointStatus(item) === "monitor").length;
+      values[0].textContent = dashboardData.summary.jointCount;
+      values[1].textContent = fmt.format(dashboardData.summary.totalLength);
+      values[2].textContent = fmt.format(dashboardData.summary.width);
+      values[3].textContent = alarmCount + monitorCount;
+      labels[0].innerHTML = "จำนวน JOINT<br>จุดต่อ";
+      labels[1].innerHTML = "ความยาวสายพานรวม<br>เมตร";
+      labels[2].innerHTML = "ความกว้างสายพาน<br>มิลลิเมตร";
+      labels[3].innerHTML = "แจ้งเตือนจากข้อมูลจริง<br>จุด";
+    }
+
+    function segmentClass(item) {
+      const status = jointStatus(item);
+      if (status === "alarm") return "joint bad";
+      if (status === "monitor") return "joint warn";
+      return "joint";
+    }
+
+    function spliceBadgeClass(item) {
+      return spliceAgeHours(item) >= 25000 ? "joint-badge bad" : "joint-badge";
+    }
+
+    function segmentCellClass(item) {
+      const status = jointStatus(item);
+      if (status === "alarm") return "joint-cell bad";
+      if (status === "monitor") return "joint-cell warn";
+      return "joint-cell";
+    }
+
+    function renderSegment(item, isBottom = false) {
+      const badge = `<span class="${spliceBadgeClass(item)}">${item.joint}</span>`;
+      const segment = `<div class="${segmentClass(item)} ${isBottom ? "bottom" : ""}" data-joint="${item.joint}">${fmt2.format(item.length)}m</div>`;
+      return `
+        <div class="${segmentCellClass(item)} ${isBottom ? "bottom-cell" : ""}">
+          ${isBottom ? `${segment}${badge}` : `${badge}${segment}`}
+        </div>`;
+    }
+
+    function rebuildBelt() {
+      setText(".panel-title", currentSection === "equipment" ? `Equipment ${dashboardData.summary.line}` : `Line ${dashboardData.summary.line}`);
+      const top = document.querySelector(".segments:not(.bottom)");
+      const bottom = document.querySelector(".segments.bottom");
+      const topItems = dashboardData.joints.slice(0, 9);
+      const bottomItems = dashboardData.joints.slice(9).reverse();
+      if (!dashboardData.joints.length) {
+        top.style.gridTemplateColumns = "1fr";
+        bottom.style.left = "auto";
+        bottom.style.width = "auto";
+        bottom.style.gridTemplateColumns = "1fr";
+        top.innerHTML = `<div class="joint-cell"><span class="joint-badge">-</span><div class="joint">No data</div></div>`;
+        bottom.innerHTML = "";
+        return;
+      }
+      const maxLength = Math.max(...dashboardData.joints.map(item => item.length));
+      top.style.gridTemplateColumns = topItems.map(item => `${Math.max(item.length / maxLength, .72)}fr`).join(" ");
+      bottom.style.left = bottomItems.length <= 2 ? "auto" : "48%";
+      bottom.style.width = bottomItems.length <= 2 ? `${bottomItems.length * 150}px` : "auto";
+      bottom.style.gridTemplateColumns = bottomItems.map(item => `${Math.max(item.length / maxLength, .72)}fr`).join(" ");
+      top.innerHTML = topItems.map(item => renderSegment(item)).join("");
+      bottom.innerHTML = bottomItems.map(item => renderSegment(item, true)).join("");
+    }
+
+    function rebuildCharts() {
+      const plots = document.querySelectorAll(".plot");
+      const thicknessChart = document.querySelectorAll(".chart")[0];
+      const hardnessChart = document.querySelectorAll(".chart")[1];
+      const thicknessPlot = plots[0];
+      const hardPlot = plots[1];
+      thicknessChart.querySelector(".y-axis").innerHTML = ["36 mm", "34 mm", "32 mm", "30 mm", "28 mm", "26 mm"].map(label => `<span>${label}</span>`).join("");
+      hardnessChart.querySelector(".y-axis").innerHTML = ["80 A", "75 A", "70 A", "65 A", "60 A", "55 A"].map(label => `<span>${label}</span>`).join("");
+      const scale = (value, min, max) => Math.max(((value - min) / (max - min)) * 100, 2);
+      thicknessPlot.innerHTML = dashboardData.joints.map(item => `
+        <div class="bar-group" data-label="${item.joint}">
+          <span class="bar" title="${item.thickL.toFixed(1)} mm" style="height:${scale(item.thickL, 26, 36)}%"></span>
+          <span class="bar orange" title="${item.thickR.toFixed(1)} mm" style="height:${scale(item.thickR, 26, 36)}%"></span>
+        </div>`).join("");
+      hardPlot.innerHTML = dashboardData.joints.map(item => {
+        const hardness = avgHardness(item);
+        return `
+        <div class="bar-group" data-label="${item.joint}">
+          <span class="bar green" title="${hardness.toFixed(1)} Shore A" style="height:${scale(hardness, 55, 80)}%"></span>
+        </div>`;
+      }).join("");
+    }
+
+    function rebuildTable() {
+      const table = document.querySelector(".detail-table");
+      if (!table) return;
+      table.querySelector("thead").innerHTML = `
+        <tr>
+          <th>Joint</th><th>Thick L</th><th>Thick R</th><th>Hard L</th><th>Hard C</th><th>Hard R</th>
+          <th>Width</th><th>ST</th><th>Brand</th><th>Type</th><th>Length</th><th>Belt Hr</th>
+          <th>Splice Hr</th><th>Splice Brand</th><th>Status</th><th>Detail</th>
+        </tr>`;
+      if (!dashboardData.joints.length) {
+        table.querySelector("tbody").innerHTML = `<tr><td colspan="16" class="detail-note">No data</td></tr>`;
+        return;
+      }
+      table.querySelector("tbody").innerHTML = dashboardData.joints.map(item => {
+        const status = jointStatus(item);
+        const warn = status !== "normal";
+        const alarm = status === "alarm";
+        return `
+          <tr>
+            <td>${item.joint}</td>
+            <td class="${thicknessClass(item.thickL)}">${fmt2.format(item.thickL)}</td>
+            <td class="${thicknessClass(item.thickR)}">${fmt2.format(item.thickR)}</td>
+            <td>${item.hardL}</td><td>${item.hardC}</td><td>${item.hardR}</td>
+            <td>${fmt.format(item.width)}</td><td>${fmt.format(item.st)}</td><td>${item.brand}</td><td>${item.type}</td>
+            <td>${fmt2.format(item.length)}</td>
+            <td>${fmt.format(item.beltHours)}</td>
+            <td class="${spliceAgeHours(item) >= 25000 ? "fail" : "ok"}">${fmt.format(item.spliceHours)}</td><td>${item.spliceBrand}</td>
+            <td><span class="pill ${alarm ? "alarm" : warn ? "warn" : ""}">${alarm ? "ALARM" : warn ? "MONITOR" : "NORMAL"}</span></td>
+            <td class="detail-note">${item.note}</td>
+          </tr>`;
+      }).join("");
+    }
+
+    function rebuildAll() {
+      rebuildExecutiveSummary();
+      rebuildTabs();
+      rebuildMetrics();
+      rebuildBelt();
+      rebuildCharts();
+      rebuildTable();
+    }
+
+    function bindAuthControls() {
+      document.querySelector(".auth-form").addEventListener("submit", async event => {
+        event.preventDefault();
+        const password = new FormData(event.currentTarget).get("password").toString().trim();
+        if (!password) {
+          setAuthMessage("กรุณากรอกรหัสผ่าน");
+          return;
+        }
+        try {
+          await unlockDashboard(password);
+        } catch (error) {
+          sessionStorage.removeItem(AUTH_STORAGE_KEY);
+          setAuthMessage(error.message || "รหัสผ่านไม่ถูกต้อง");
+        }
+      });
+
+      document.querySelectorAll(".refresh").forEach(button => {
+        button.addEventListener("click", refreshDashboard);
+      });
+      document.querySelector(".logout").addEventListener("click", lockDashboard);
+      document.querySelector(".open-detail").addEventListener("click", () => switchView("detail"));
+      document.querySelector(".summary-toggle").addEventListener("click", () => switchView("summary"));
+    }
+
+    async function initDashboard() {
+      bindAuthControls();
+      document.body.classList.add("summary-mode");
+      moveCrJointsToEquipment();
+      rebuildAll();
+
+      const savedPassword = sessionStorage.getItem(AUTH_STORAGE_KEY);
+      if (!savedPassword) {
+        lockDashboard();
+        return;
+      }
+
+      try {
+        await unlockDashboard(savedPassword);
+      } catch (error) {
+        lockDashboard();
+        setAuthMessage(error.message || "กรุณาเข้าสู่ระบบใหม่");
+      }
+    }
+
+    initDashboard();
+  </script>
+</body>
+</html>
