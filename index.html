@@ -6,18 +6,20 @@
   <title>Conveyor Belt Dashboard</title>
   <style>
     :root {
-      --bg: #eaf8fb;
-      --panel: #d8eef9;
-      --panel-2: #b9dff1;
-      --line: #8fcddb;
-      --muted: #4f7d98;
-      --text: #123850;
+      --bg: #d7e2df;
+      --panel: #edf3f1;
+      --panel-2: #c5d3d0;
+      --line: #8fa7a5;
+      --muted: #5a7074;
+      --text: #183844;
       --green: #22c56e;
-      --orange: #3b98dc;
+      --orange: #d58a2c;
       --yellow: #f1b61b;
       --red: #e64c47;
-      --purple: #2b73af;
-      --cyan: #9edee0;
+      --purple: #7c236d;
+      --cyan: #2f9ec2;
+      --deep: #253f47;
+      --soft-blue: #8ac9d7;
     }
 
     * {
@@ -30,7 +32,8 @@
       color: var(--text);
       font-family: Inter, "Segoe UI", Tahoma, sans-serif;
       background:
-        radial-gradient(circle at top left, rgba(158,222,224,.46), transparent 34rem),
+        radial-gradient(circle at top left, rgba(138,201,215,.34), transparent 34rem),
+        radial-gradient(circle at top right, rgba(213,138,44,.12), transparent 28rem),
         var(--bg);
       background-size: auto;
       letter-spacing: 0;
@@ -48,7 +51,7 @@
       justify-content: space-between;
       gap: 18px;
       padding-bottom: 18px;
-      border-bottom: 1px solid rgba(43,115,175,.18);
+      border-bottom: 1px solid rgba(37,63,71,.16);
     }
 
     .brand {
@@ -57,10 +60,10 @@
       gap: 13px;
       min-width: 280px;
       padding: 9px 13px;
-      border: 1px solid rgba(143,205,219,.46);
+      border: 1px solid rgba(143,167,165,.52);
       border-radius: 8px;
-      background: linear-gradient(135deg, rgba(216,238,249,.96), rgba(185,223,241,.9));
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,.52), 0 12px 26px rgba(37,111,171,.14);
+      background: linear-gradient(135deg, rgba(237,243,241,.96), rgba(197,211,208,.88));
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.52), 0 12px 26px rgba(37,63,71,.12);
     }
 
     .brand-logo {
@@ -88,7 +91,7 @@
 
     .subtitle {
       margin-top: 7px;
-      color: #4f7d98;
+      color: var(--muted);
       font-size: 12px;
     }
 
@@ -102,7 +105,7 @@
 
     .last-update {
       margin-right: 8px;
-      color: #5e8aa4;
+      color: #667b7f;
       font-size: 10px;
       text-align: right;
       text-transform: uppercase;
@@ -110,29 +113,30 @@
 
     button {
       height: 34px;
+      border: 1px solid var(--line);
       border-radius: 7px;
       padding: 0 14px;
-      color: #123850;
+      color: var(--text);
       font-size: 11px;
       font-weight: 800;
       text-transform: uppercase;
-      background: linear-gradient(135deg, #72b9e4 0%, #a8d6ee 58%, #d8eef9 100%);
+      background: var(--panel-2);
       cursor: default;
       box-shadow: inset 0 1px 0 rgba(255,255,255,.65);
     }
 
     .refresh {
-      border: 1px solid #3b98dc;
-      color: #205d90;
+      border-color: var(--line);
+      color: #20556a;
     }
 
     .logout {
-      border: 1px solid #5aaee2;
-      color: #205d90;
+      border-color: var(--line);
+      color: #20556a;
     }
 
     .print-button {
-      border: 1px solid #3b98dc;
+      border-color: var(--line);
       color: #111;
     }
 
@@ -152,7 +156,7 @@
     .tab {
       min-width: 148px;
       height: 34px;
-      border: 1px solid #3b98dc;
+      border: 1px solid var(--cyan);
       border-radius: 7px 7px 0 0;
       display: inline-flex;
       align-items: center;
@@ -161,15 +165,16 @@
       color: #111;
       font-size: 12px;
       font-weight: 800;
-      background: linear-gradient(135deg, #72b9e4 0%, #a8d6ee 58%, #d8eef9 100%);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.72), 0 8px 18px rgba(37,111,171,.08);
+      background: var(--panel-2);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.72), 0 8px 18px rgba(37,63,71,.08);
     }
 
     .tab.active {
       color: #111;
-      border-color: #3b98dc;
-      border-bottom-color: #3b98dc;
-      box-shadow: inset 0 -3px 0 #3b98dc, 0 0 0 1px rgba(59,152,220,.12);
+      border-color: var(--deep);
+      border-bottom-color: var(--deep);
+      background: #b2c4c1;
+      box-shadow: inset 0 -3px 0 var(--deep), 0 0 0 1px rgba(37,63,71,.13);
     }
 
     .tab[data-section],
@@ -187,7 +192,7 @@
 
     .hint {
       margin: 5px 0 13px;
-      color: #4f7d98;
+      color: var(--muted);
       font-size: 10px;
     }
 
@@ -199,11 +204,11 @@
     .line-tab {
       min-width: 72px;
       height: 35px;
-      border: 1px solid #3b98dc;
+      border: 1px solid var(--cyan);
       border-radius: 7px;
       color: #111;
-      background: linear-gradient(135deg, #72b9e4 0%, #a8d6ee 58%, #d8eef9 100%);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.72), 0 8px 18px rgba(37,111,171,.08);
+      background: var(--panel-2);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.72), 0 8px 18px rgba(37,63,71,.08);
       font-size: 11px;
       font-weight: 800;
       display: inline-flex;
@@ -216,6 +221,7 @@
     .line-tab.active {
       color: #111;
       border-color: var(--green);
+      background: #b2c4c1;
       box-shadow: 0 0 0 1px rgba(34,197,110,.22), inset 0 -3px 0 var(--green);
     }
 
@@ -238,8 +244,8 @@
       justify-content: center;
       padding: 24px;
       background:
-        radial-gradient(circle at top left, rgba(158,222,224,.7), transparent 34rem),
-        rgba(234,248,251,.96);
+        radial-gradient(circle at top left, rgba(138,201,215,.56), transparent 34rem),
+        rgba(215,226,223,.96);
     }
 
     body.locked .auth-screen {
@@ -248,11 +254,11 @@
 
     .auth-card {
       width: min(420px, 100%);
-      border: 1px solid rgba(59,152,220,.32);
+      border: 1px solid rgba(47,158,194,.32);
       border-radius: 10px;
       padding: 22px;
-      background: linear-gradient(135deg, rgba(216,238,249,.98), rgba(185,223,241,.96));
-      box-shadow: 0 24px 60px rgba(37,111,171,.22), inset 0 1px 0 rgba(255,255,255,.7);
+      background: linear-gradient(135deg, rgba(237,243,241,.98), rgba(197,211,208,.96));
+      box-shadow: 0 24px 60px rgba(37,63,71,.20), inset 0 1px 0 rgba(255,255,255,.7);
     }
 
     .auth-card img {
@@ -266,14 +272,14 @@
 
     .auth-card h2 {
       margin: 0 0 8px;
-      color: #123850;
+      color: var(--text);
       font-size: 20px;
       line-height: 1.2;
     }
 
     .auth-card p {
       margin: 0 0 16px;
-      color: #4f7d98;
+      color: var(--muted);
       font-size: 13px;
       line-height: 1.5;
     }
@@ -284,7 +290,7 @@
     }
 
     .auth-form label {
-      color: #123850;
+      color: var(--text);
       font-size: 12px;
       font-weight: 800;
     }
@@ -292,10 +298,10 @@
     .auth-form input {
       width: 100%;
       height: 42px;
-      border: 1px solid rgba(59,152,220,.54);
+      border: 1px solid rgba(47,158,194,.52);
       border-radius: 8px;
       padding: 0 12px;
-      color: #123850;
+      color: var(--text);
       background: rgba(255,255,255,.88);
       font-size: 15px;
       font-weight: 700;
@@ -303,15 +309,15 @@
     }
 
     .auth-form input:focus {
-      border-color: #2b73af;
-      box-shadow: 0 0 0 3px rgba(59,152,220,.16);
+      border-color: var(--deep);
+      box-shadow: 0 0 0 3px rgba(47,158,194,.16);
     }
 
     .auth-submit {
       width: 100%;
       height: 42px;
       margin-top: 4px;
-      border: 1px solid #2b73af;
+      border: 1px solid var(--deep);
       cursor: pointer;
     }
 
@@ -324,7 +330,7 @@
 
     .data-source-status {
       width: 100%;
-      color: #4f7d98;
+      color: var(--muted);
       font-size: 10px;
       text-align: right;
     }
@@ -348,16 +354,16 @@
     }
 
     .summary-title-panel {
-      border: 1px solid rgba(143,205,219,.84);
+      border: 1px solid rgba(143,167,165,.84);
       border-radius: 8px;
       padding: 24px;
-      background: linear-gradient(135deg, rgba(216,238,249,.98), rgba(185,223,241,.9));
-      box-shadow: 0 14px 35px rgba(37,111,171,.14);
+      background: linear-gradient(135deg, rgba(237,243,241,.98), rgba(197,211,208,.9));
+      box-shadow: 0 14px 35px rgba(37,63,71,.13);
     }
 
     .summary-title-panel h2 {
       margin: 0 0 8px;
-      color: #123850;
+      color: var(--text);
       font-size: clamp(24px, 3vw, 38px);
       line-height: 1.05;
     }
@@ -365,7 +371,7 @@
     .summary-title-panel p {
       max-width: 780px;
       margin: 0;
-      color: #4f7d98;
+      color: var(--muted);
       font-size: 14px;
       line-height: 1.55;
     }
@@ -383,15 +389,15 @@
     }
 
     .summary-status-panel {
-      border: 1px solid rgba(143,205,219,.84);
+      border: 1px solid rgba(143,167,165,.84);
       border-radius: 8px;
       padding: 22px;
       background: var(--panel);
-      box-shadow: 0 14px 35px rgba(37,111,171,.14);
+      box-shadow: 0 14px 35px rgba(37,63,71,.13);
     }
 
     .summary-status-label {
-      color: #4f7d98;
+      color: var(--muted);
       font-size: 11px;
       font-weight: 800;
       text-transform: uppercase;
@@ -422,16 +428,16 @@
 
     .summary-card {
       min-height: 104px;
-      border: 1px solid rgba(143,205,219,.84);
+      border: 1px solid rgba(143,167,165,.84);
       border-radius: 8px;
       padding: 16px;
       background: var(--panel);
-      box-shadow: 0 10px 25px rgba(37,111,171,.12);
+      box-shadow: 0 10px 25px rgba(37,63,71,.11);
     }
 
     .summary-card strong {
       display: block;
-      color: #123850;
+      color: var(--text);
       font-size: clamp(22px, 2.8vw, 34px);
       line-height: 1;
     }
@@ -439,7 +445,7 @@
     .summary-card span {
       display: block;
       margin-top: 9px;
-      color: #4f7d98;
+      color: var(--muted);
       font-size: 12px;
       line-height: 1.35;
     }
@@ -462,11 +468,11 @@
       grid-template-columns: minmax(70px, .4fr) minmax(0, 1fr) auto;
       gap: 10px;
       align-items: center;
-      border: 1px solid rgba(143,205,219,.62);
+      border: 1px solid rgba(143,167,165,.62);
       border-radius: 7px;
       padding: 10px 12px;
       background: rgba(255,255,255,.58);
-      color: #123850;
+      color: var(--text);
       font-size: 12px;
       font-weight: 800;
     }
@@ -488,15 +494,15 @@
     .summary-table td,
     .equipment-summary-table th,
     .equipment-summary-table td {
-      border-bottom: 1px solid rgba(143,205,219,.54);
+      border-bottom: 1px solid rgba(143,167,165,.54);
       padding: 9px 8px;
-      color: #123850;
+      color: var(--text);
       text-align: left;
     }
 
     .summary-table th,
     .equipment-summary-table th {
-      color: #4f7d98;
+      color: var(--muted);
       font-size: 11px;
       text-transform: uppercase;
     }
@@ -549,16 +555,16 @@
 
     .metric {
       min-height: 116px;
-      border: 1px solid rgba(143,205,219,.84);
+      border: 1px solid rgba(143,167,165,.84);
       border-top-color: rgba(34,197,110,.85);
       border-radius: 8px;
       padding: 23px 21px;
       background: var(--panel);
-      box-shadow: 0 14px 35px rgba(37,111,171,.16);
+      box-shadow: 0 14px 35px rgba(37,63,71,.14);
     }
 
     .metric:nth-child(2) {
-      border-top-color: rgba(59,152,220,.88);
+      border-top-color: rgba(47,158,194,.88);
     }
 
     .metric:nth-child(3) {
@@ -583,8 +589,8 @@
       display: grid;
       place-items: center;
       font-size: 14px;
-      color: #123850;
-      background: #b9dff1;
+      color: var(--text);
+      background: var(--panel-2);
     }
 
     .metric-value {
@@ -607,14 +613,14 @@
     }
 
     .metric-label {
-      color: #4f7d98;
+      color: var(--muted);
       font-size: 11px;
       line-height: 1.45;
     }
 
     .section-title {
       margin: 0 0 12px;
-      color: #756947;
+      color: #6b614e;
       font-size: 11px;
       font-weight: 800;
       text-transform: uppercase;
@@ -622,10 +628,10 @@
     }
 
     .panel {
-      border: 1px solid rgba(143,205,219,.84);
+      border: 1px solid rgba(143,167,165,.84);
       border-radius: 8px;
       background: var(--panel);
-      box-shadow: 0 16px 42px rgba(37,111,171,.18);
+      box-shadow: 0 16px 42px rgba(37,63,71,.16);
     }
 
     .belt-panel {
@@ -654,7 +660,7 @@
       border: 6px solid #000;
       border-left: 0;
       border-right: 0;
-      background: rgba(216,238,249,.66);
+      background: rgba(237,243,241,.66);
     }
 
     .belt-arrow {
@@ -664,7 +670,7 @@
       z-index: 4;
       pointer-events: none;
       opacity: .96;
-      filter: drop-shadow(0 0 8px rgba(37,111,171,.36));
+      filter: drop-shadow(0 0 8px rgba(37,63,71,.28));
     }
 
     .belt-arrow::before {
@@ -675,8 +681,8 @@
       right: 14px;
       height: 4px;
       border-radius: 999px;
-      background: linear-gradient(90deg, rgba(37,111,171,.35), #256fab, #3b98dc);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.42), 0 0 10px rgba(37,111,171,.24);
+      background: linear-gradient(90deg, rgba(37,63,71,.3), var(--deep), var(--cyan));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.42), 0 0 10px rgba(37,63,71,.22);
     }
 
     .belt-arrow::after {
@@ -685,8 +691,8 @@
       top: 4px;
       width: 22px;
       height: 22px;
-      background: linear-gradient(135deg, #9edee0, #3b98dc 58%, #256fab);
-      box-shadow: inset 1px 1px 0 rgba(255,255,255,.36), 0 0 12px rgba(37,111,171,.32);
+      background: linear-gradient(135deg, #8bd1c9, var(--cyan) 58%, var(--deep));
+      box-shadow: inset 1px 1px 0 rgba(255,255,255,.36), 0 0 12px rgba(37,63,71,.28);
     }
 
     .belt-arrow.top {
@@ -718,11 +724,11 @@
       height: 116px;
       border: 4px solid #000;
       border-radius: 50%;
-      background: #b9dff1;
+      background: var(--panel-2);
       display: grid;
       place-items: center;
       z-index: 3;
-      box-shadow: 0 0 0 2px rgba(37,111,171,.32), inset 0 0 40px rgba(16,68,103,.18);
+      box-shadow: 0 0 0 2px rgba(37,63,71,.28), inset 0 0 40px rgba(24,56,68,.16);
     }
 
     .pulley.left {
@@ -739,8 +745,8 @@
       border-radius: 50%;
       display: grid;
       place-items: center;
-      background: #8fcddb;
-      color: #123850;
+      background: var(--line);
+      color: var(--text);
       font-size: 12px;
       font-weight: 900;
     }
@@ -842,10 +848,10 @@
       align-items: center;
       flex-wrap: wrap;
       gap: 15px;
-      border-top: 1px solid rgba(143,205,219,.42);
+      border-top: 1px solid rgba(143,167,165,.42);
       margin-top: 18px;
       padding-top: 12px;
-      color: #4f7d98;
+      color: var(--muted);
       font-size: 10px;
     }
 
@@ -884,21 +890,21 @@
 
     .chart-title {
       margin: 0;
-      color: #123850;
+      color: var(--text);
       font-size: 13px;
       font-weight: 900;
     }
 
     .chart-sub {
       margin-top: 4px;
-      color: #4f7d98;
+      color: var(--muted);
       font-size: 11px;
     }
 
     .badge {
       border: 1px solid var(--orange);
       border-radius: 5px;
-      color: #256fab;
+      color: var(--deep);
       padding: 4px 8px;
       font-size: 9px;
       font-weight: 900;
@@ -915,7 +921,7 @@
     .y-axis {
       display: grid;
       grid-template-rows: repeat(6, 1fr);
-      color: #b9aa88;
+      color: #7b7f76;
       font-size: 9px;
       text-align: right;
       padding-top: 4px;
@@ -928,9 +934,9 @@
       align-items: end;
       gap: 8px;
       padding: 0 0 22px;
-      border-left: 1px solid rgba(143,205,219,.24);
+      border-left: 1px solid rgba(143,167,165,.24);
       background:
-        linear-gradient(rgba(143,205,219,.28) 1px, transparent 1px);
+        linear-gradient(rgba(143,167,165,.24) 1px, transparent 1px);
       background-size: 100% 39px;
     }
 
@@ -947,7 +953,7 @@
       content: attr(data-label);
       position: absolute;
       bottom: -20px;
-      color: #4f7d98;
+      color: var(--muted);
       font-size: 9px;
       font-weight: 700;
     }
@@ -978,7 +984,7 @@
       justify-content: center;
       gap: 14px;
       margin-top: -2px;
-      color: #4f7d98;
+      color: var(--muted);
       font-size: 10px;
     }
 
@@ -987,7 +993,7 @@
       height: 9px;
       display: inline-block;
       margin-right: 5px;
-      background: #a99b68;
+      background: #8d836f;
     }
 
     .chart-legend .second i {
@@ -1012,43 +1018,43 @@
 
     thead th {
       height: 34px;
-      color: #4f7d98;
+      color: var(--muted);
       text-transform: uppercase;
       font-size: 9px;
       letter-spacing: .08em;
-      background: #d8eef9;
-      border-top: 1px solid rgba(143,205,219,.9);
-      border-bottom: 1px solid rgba(143,205,219,.9);
+      background: var(--panel);
+      border-top: 1px solid rgba(143,167,165,.9);
+      border-bottom: 1px solid rgba(143,167,165,.9);
     }
 
     th:first-child {
-      border-left: 1px solid rgba(143,205,219,.9);
+      border-left: 1px solid rgba(143,167,165,.9);
       border-radius: 6px 0 0 0;
     }
 
     th:last-child {
-      border-right: 1px solid rgba(143,205,219,.9);
+      border-right: 1px solid rgba(143,167,165,.9);
       border-radius: 0 6px 0 0;
     }
 
     tbody td {
       height: 38px;
       text-align: center;
-      color: #123850;
+      color: var(--text);
       font-weight: 700;
-      border-bottom: 1px solid rgba(143,205,219,.74);
+      border-bottom: 1px solid rgba(143,167,165,.74);
     }
 
     tbody tr {
-      background: #eaf8fb;
+      background: var(--bg);
     }
 
     tbody tr:nth-child(even) {
-      background: #d8eef9;
+      background: var(--panel);
     }
 
     td:first-child {
-      color: #0e3045;
+      color: var(--text);
       font-weight: 900;
     }
 
@@ -1195,8 +1201,8 @@
         width: 118mm;
         min-width: 0;
         padding: 3mm 4mm;
-        border: 1px solid #8fcddb;
-        background: linear-gradient(135deg, #d8eef9, #b9dff1);
+        border: 1px solid var(--line);
+        background: linear-gradient(135deg, var(--panel), var(--panel-2));
       }
 
       .brand-logo {
@@ -1248,7 +1254,7 @@
 
       thead th {
         color: #000;
-        background: #d8eef9;
+        background: var(--panel);
       }
 
       tbody td {
@@ -1300,11 +1306,9 @@
     <section class="summary-page" aria-label="Executive summary">
       <div class="summary-hero">
         <div class="summary-title-panel">
-          <h2>Executive Summary</h2>
-          <p>ภาพรวมสถานะสายพาน Line A และ Equipment สำหรับใช้สรุปต่อผู้บริหาร แสดงจำนวนจุดตรวจทั้งหมด ความยาวรวม สถานะเฝ้าระวัง และรายการเสี่ยงที่ควรติดตามก่อนเปิดดูรายละเอียดเชิงลึก</p>
+          <h2>Summary</h2>
           <div class="summary-actions">
             <button class="open-detail" type="button">ดูข้อมูลละเอียด</button>
-            <button class="refresh" type="button">⟳ Refresh</button>
           </div>
         </div>
         <div class="summary-status-panel">
@@ -1339,7 +1343,6 @@
           <div class="chart-head">
             <div>
               <h3 class="chart-title">Line Status</h3>
-              <div class="chart-sub">Line A summary by tab</div>
             </div>
             <span class="badge">Overview</span>
           </div>
